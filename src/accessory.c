@@ -4,6 +4,8 @@
 #include <homekit/characteristics.h>
 #include <stdio.h>
 
+#include "serial_bridge.h"
+
 #define ACCESSORY_NAME  ("HVAC")
 #define ACCESSORY_SN  ("00001")
 #define ACCESSORY_MANUFACTURER ("Arduino")
@@ -35,11 +37,10 @@ homekit_value_t get_target_heating_cooling_state() {
 }
 
 void set_target_heating_cooling_state(homekit_value_t value) {
-    if (value.format != homekit_format_int) {
-        printf("Invalid target heating cooling state value format %d", value.format);
-        return;
-    }
     target_heating_cooling_state = value.int_value;
+    serial_print("Set target heating cooling state: ");
+    serial_print_int(target_heating_cooling_state);
+    serial_println("");
 }
 
 homekit_characteristic_t ch_target_heating_cooling_state = HOMEKIT_CHARACTERISTIC_(TARGET_HEATING_COOLING_STATE, 
@@ -66,6 +67,9 @@ homekit_value_t get_target_temperature() {
 
 void set_target_temperature(homekit_value_t value) {
     target_temperature = value.float_value;
+    serial_print("Set target temperature: ");
+    serial_print_float(target_temperature, 2);
+    serial_println("");
 }
 
 homekit_characteristic_t ch_target_temperature = HOMEKIT_CHARACTERISTIC_(TARGET_TEMPERATURE,
