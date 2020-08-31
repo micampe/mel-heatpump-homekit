@@ -15,7 +15,6 @@ void setup() {
 }
 
 void loop() {
-  ArduinoOTA.handle();
-  delay(20);
-  heartbeat(5);
+  heartbeat(10);
+  handleOTA();
 }

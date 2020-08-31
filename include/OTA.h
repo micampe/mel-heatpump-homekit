@@ -38,3 +38,11 @@ void setupOTA(const char *nameprefix) {
 
   Serial.println("OTA Initialized");
 }
+
+void handleOTA() {
+  static unsigned long tick = micros();
+
+  if (micros() > tick) {
+    ArduinoOTA.handle();
+  }
+}
