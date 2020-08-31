@@ -1,7 +1,7 @@
 #include <WiFiManager.h>
 #include <ESP8266mDNS.h>
 
-void setupWiFi(const char *nameprefix, const char *hostname) {
+void setupWiFi(const char *nameprefix, const char *hostname = NULL) {
   WiFiManager wifiManager;
   wifiManager.setDebugOutput(false);
 
@@ -29,10 +29,12 @@ void setupWiFi(const char *nameprefix, const char *hostname) {
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
 
-  if (MDNS.begin(hostname)) {
-    Serial.print(F("mDNS hostname: "));
-    Serial.println(hostname);
-  } else {
-    Serial.println(F("mDNS failed to start"));
+  if (hostname != NULL) {
+    if (MDNS.begin(hostname)) {
+      Serial.print(F("mDNS hostname: "));
+      Serial.println(hostname);
+    } else {
+      Serial.println(F("mDNS failed to start"));
+    }
   }
 }
