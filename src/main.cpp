@@ -10,11 +10,13 @@ void setup() {
   Serial.begin(115200);
   Serial.println();
 
+  pinMode(STATUS_LED_PIN, OUTPUT);
+
   setupWiFi(NAME_PREFIX, "hkm");
   setupOTA(NAME_PREFIX);
 }
 
 void loop() {
-  heartbeat(10);
+  heartbeat(10, true);
   handleOTA();
 }
