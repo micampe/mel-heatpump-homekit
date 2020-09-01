@@ -24,7 +24,7 @@ void setup() {
 }
 
 void loop() {
-  // heartbeat(10, true);
+  heartbeat(10, true);
   handleOTA();
   homekit_loop();
 }
@@ -36,7 +36,7 @@ extern "C" homekit_characteristic_t name;
 extern "C" void accessory_init();
 
 void homekit_setup() {
-  // homekit_storage_reset();
+    // homekit_storage_reset();
 	accessory_init();
 	uint8_t mac[WL_MAC_ADDR_LENGTH];
 	WiFi.macAddress(mac);
