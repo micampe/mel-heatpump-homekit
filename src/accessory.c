@@ -4,7 +4,7 @@
 #include <homekit/types.h>
 
 #include "serial_bridge.h"
-#include "thermostat_service.h"
+#include "heater_cooler_service.h"
 
 #define ACCESSORY_NAME  ("HVAC")
 #define ACCESSORY_SN  ("00001")
@@ -49,7 +49,7 @@ homekit_accessory_t *accessories[] = {
 				HOMEKIT_CHARACTERISTIC(IDENTIFY, accessory_identify),
 				NULL
             }),
-            &service_thermostat,
+            &service_heater_cooler,
 			HOMEKIT_SERVICE(LIGHTBULB, .characteristics = (homekit_characteristic_t *[]){
 				HOMEKIT_CHARACTERISTIC(NAME, "Led"), 
 				&ch_led_on, 
