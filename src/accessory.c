@@ -22,6 +22,18 @@ void accessory_identify(homekit_value_t _value) {
 	serial_println("accessory identify");
 }
 
+#define LED_ON LOW
+#define LED_OFF HIGH
+void set_led_on(homekit_value_t value) {
+    if (value.bool_value) {
+        digitalWrite(LED_BUILTIN, LED_ON);
+    } else {
+        digitalWrite(LED_BUILTIN, LED_OFF);
+    }
+}
+
+homekit_characteristic_t ch_led_on = HOMEKIT_CHARACTERISTIC_(ON, false,
+	.setter=set_led_on
 );
 
 homekit_accessory_t *accessories[] = {
@@ -38,7 +50,13 @@ homekit_accessory_t *accessories[] = {
 				NULL
             }),
             &service_thermostat,
-			NULL}),
+			HOMEKIT_SERVICE(LIGHTBULB, .characteristics = (homekit_characteristic_t *[]){
+				HOMEKIT_CHARACTERISTIC(NAME, "Led"), 
+				&ch_led_on, 
+				NULL
+            }),
+			NULL
+        }),
 	NULL
 };
 

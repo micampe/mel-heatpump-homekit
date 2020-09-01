@@ -1,6 +1,5 @@
 #include <Arduino.h>
 
-#define STATUS_LED_PIN D4
 #define MICROSEC(s) (s * 1000000L)
 
 void heartbeat(unsigned seconds, bool blink) {
@@ -10,10 +9,10 @@ void heartbeat(unsigned seconds, bool blink) {
     if (blink) {
       int led_bri = 10;
       int pwm = PWMRANGE - (int)(led_bri * 1.0 * PWMRANGE / 100.0 + 0.5f);
-      analogWrite(STATUS_LED_PIN, pwm);
-      // digitalWrite(STATUS_LED_PIN, LOW);
+      analogWrite(LED_BUILTIN, pwm);
+      // digitalWrite(LED_BUILTIN, LOW);
       delay(50);
-      digitalWrite(STATUS_LED_PIN, HIGH);
+      digitalWrite(LED_BUILTIN, HIGH);
     }
 
     Serial.print(".");

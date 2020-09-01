@@ -15,12 +15,12 @@ void setup() {
   Serial.begin(115200);
   Serial.println();
 
-  pinMode(STATUS_LED_PIN, OUTPUT);
+  pinMode(LED_BUILTIN, OUTPUT);
 
   setupWiFi(NAME_PREFIX);
   setupOTA(NAME_PREFIX);
   homekit_setup();
-  digitalWrite(STATUS_LED_PIN, HIGH);
+  digitalWrite(LED_BUILTIN, HIGH);
 }
 
 void loop() {
