@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <TelnetStream.h>
 
 #include "OTA.h"
 #include "heartbeat.h"
@@ -10,6 +11,7 @@
 void setup() {
     Serial.begin(115200);
     Serial.println();
+    TelnetStream.begin();
 
     pinMode(LED_BUILTIN, OUTPUT);
 
