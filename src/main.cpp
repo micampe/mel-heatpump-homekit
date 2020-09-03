@@ -20,7 +20,7 @@ void setup() {
 }
 
 void loop() {
-    heartbeat(10, true);
+    // heartbeat(10, true);
     handleOTA();
     homekit_loop();
 }

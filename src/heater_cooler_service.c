@@ -23,53 +23,76 @@ float cooling_threshold_temperature = 26;
 float heating_threshold_temperature = 16;
 
 // forward declarations
+homekit_characteristic_t ch_heater_cooler_active;
 homekit_characteristic_t ch_current_heater_cooler_state;
+homekit_characteristic_t ch_cooling_threshold_temperature;
+homekit_characteristic_t ch_heating_threshold_temperature;
+homekit_characteristic_t ch_heater_cooler_current_temperature;
 
-void set_heater_cooler_active(homekit_value_t value) {
-    heater_cooler_active = value.uint8_value;
+void update_state() {
+    float current_temperature = ch_heater_cooler_current_temperature.value.float_value;
+
     if (heater_cooler_active == HEATER_COOLER_INACTIVE) {
         current_heater_cooler_state = HEATER_COOLER_STATE_INACTIVE;
     } else {
         current_heater_cooler_state = HEATER_COOLER_STATE_IDLE;
+        if (target_heater_cooler_state == HEATER_COOLER_TARGET_STATE_AUTO) {
+            serial_print("auto ");
+            if (current_temperature > cooling_threshold_temperature) {
+                current_heater_cooler_state = HEATER_COOLER_STATE_COOLING;
+                serial_println("cooling");
+            } else if (current_temperature < heating_threshold_temperature) {
+                current_heater_cooler_state = HEATER_COOLER_STATE_HEATING;
+                serial_println("heating");
+            } else {
+                serial_println("idle");
+            }
+        } else if (target_heater_cooler_state == HEATER_COOLER_TARGET_STATE_COOL && current_temperature > cooling_threshold_temperature) {
+             current_heater_cooler_state = HEATER_COOLER_STATE_COOLING;
+        } else if (target_heater_cooler_state == HEATER_COOLER_TARGET_STATE_HEAT && current_temperature < heating_threshold_temperature) {
+            current_heater_cooler_state = HEATER_COOLER_STATE_HEATING;
+        }
     }
+
     homekit_characteristic_notify(&ch_current_heater_cooler_state, HOMEKIT_UINT8(current_heater_cooler_state));
-    serial_log_value("Set heater cooler active: ", heater_cooler_active);
+    serial_log_value("Current heater cooler state: ", current_heater_cooler_state);
+}
+
+void set_heater_cooler_active(homekit_value_t value) {
+    heater_cooler_active = value.uint8_value;
+    serial_log_value("Heater cooler active: ", heater_cooler_active);
+    update_state();
 }
 
 void set_target_heater_cooler_state(homekit_value_t value) {
     target_heater_cooler_state = value.uint8_value;
-    if (target_heater_cooler_state == HEATER_COOLER_TARGET_STATE_COOL) {
-        current_heater_cooler_state = HEATER_COOLER_STATE_COOLING;
-    } else if (target_heater_cooler_state == HEATER_COOLER_TARGET_STATE_HEAT) {
-        current_heater_cooler_state = HEATER_COOLER_STATE_HEATING;
-    } else {
-        current_heater_cooler_state = HEATER_COOLER_STATE_IDLE;
-    }
-    homekit_characteristic_notify(&ch_current_heater_cooler_state, HOMEKIT_UINT8(current_heater_cooler_state));
-    serial_log_value("Set target heater cooler state: ", target_heater_cooler_state);
+    serial_log_value("Target heater cooler state: ", target_heater_cooler_state);
+    update_state();
 }
 
 void set_cooling_threshold_temperature(homekit_value_t value) {
     cooling_threshold_temperature = value.float_value;
-    serial_log_value("Set cooling threshold: ", (int)cooling_threshold_temperature);
+    serial_log_value("Cooling threshold: ", (int)cooling_threshold_temperature);
+    update_state();
 } 
 
 void set_heating_threshold_temperature(homekit_value_t value) {
     heating_threshold_temperature = value.float_value;
-    serial_log_value("Set heating threshold: ", (int)heating_threshold_temperature);
+    serial_log_value("Heating threshold: ", (int)heating_threshold_temperature);
+    update_state();
 }
 
 homekit_characteristic_t ch_heater_cooler_active = HOMEKIT_CHARACTERISTIC_(ACTIVE, 0,
     .setter = set_heater_cooler_active);
 
-homekit_characteristic_t ch_heater_cooler_current_temperature = HOMEKIT_CHARACTERISTIC_(CURRENT_TEMPERATURE, 23);
+homekit_characteristic_t ch_heater_cooler_current_temperature = HOMEKIT_CHARACTERISTIC_(CURRENT_TEMPERATURE, 20);
 
 homekit_characteristic_t ch_current_heater_cooler_state = HOMEKIT_CHARACTERISTIC_(CURRENT_HEATER_COOLER_STATE, 1);
 
 homekit_characteristic_t ch_target_heater_cooler_state = HOMEKIT_CHARACTERISTIC_(TARGET_HEATER_COOLER_STATE, 0,
     .setter = set_target_heater_cooler_state);
 
-// we need to set heating/cooling thresholds extremes to the same extremes
+// we need to set heating/cooling thresholds extremes to the same values
 // so the Home app correctly displays the current temperature in the picker
 homekit_characteristic_t ch_cooling_threshold_temperature = HOMEKIT_CHARACTERISTIC_(COOLING_THRESHOLD_TEMPERATURE, 26,
     .setter = set_cooling_threshold_temperature,
