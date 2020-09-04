@@ -5,6 +5,8 @@
 
 #include "serial_bridge.h"
 #include "heater_cooler_service.h"
+#include "fan_service.h"
+#include "dehumidifier_service.h"
 
 #define ACCESSORY_NAME  ("HVAC")
 #define ACCESSORY_SN  ("00001")
@@ -50,6 +52,8 @@ homekit_accessory_t *accessories[] = {
                 NULL
             }),
             &service_heater_cooler,
+            &fan_service,
+            &dehumidifier_service,
             HOMEKIT_SERVICE(LIGHTBULB, .characteristics = (homekit_characteristic_t *[]){
                 HOMEKIT_CHARACTERISTIC(NAME, "Led"), 
                 &ch_led_on, 
