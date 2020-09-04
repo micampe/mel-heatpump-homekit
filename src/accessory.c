@@ -3,10 +3,11 @@
 #include <homekit/homekit.h>
 #include <homekit/types.h>
 
-#include "serial_bridge.h"
-#include "heater_cooler_service.h"
-#include "fan_service.h"
 #include "dehumidifier_service.h"
+#include "fan_service.h"
+#include "heater_cooler_service.h"
+#include "serial_bridge.h"
+#include "thermostat_service.h"
 
 #define ACCESSORY_NAME  ("HVAC")
 #define ACCESSORY_SN  ("00001")
@@ -51,7 +52,8 @@ homekit_accessory_t *accessories[] = {
                 HOMEKIT_CHARACTERISTIC(IDENTIFY, accessory_identify),
                 NULL
             }),
-            &service_heater_cooler,
+            &service_thermostat,
+            // &service_heater_cooler,
             &fan_service,
             &dehumidifier_service,
             HOMEKIT_SERVICE(LIGHTBULB, .characteristics = (homekit_characteristic_t *[]){

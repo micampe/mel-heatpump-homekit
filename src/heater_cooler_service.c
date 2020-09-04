@@ -77,13 +77,13 @@ homekit_characteristic_t ch_target_heater_cooler_state = HOMEKIT_CHARACTERISTIC_
 // so the Home app correctly displays the current temperature in the picker
 homekit_characteristic_t ch_cooling_threshold_temperature = HOMEKIT_CHARACTERISTIC_(COOLING_THRESHOLD_TEMPERATURE, 26,
     .setter = set_cooling_threshold_temperature,
-    .min_value = (float[]){10},
-    .max_value = (float[]){30});
+    .min_value = (float[]){16},
+    .max_value = (float[]){31});
 
 homekit_characteristic_t ch_heating_threshold_temperature = HOMEKIT_CHARACTERISTIC_(HEATING_THRESHOLD_TEMPERATURE, 16,
     .setter = set_heating_threshold_temperature,
-    .min_value = (float[]){10},
-    .max_value = (float[]){30});
+    .min_value = (float[]){16},
+    .max_value = (float[]){31});
 
 homekit_characteristic_t ch_heater_cooler_rotation_speed = HOMEKIT_CHARACTERISTIC_(ROTATION_SPEED, 30);
 
