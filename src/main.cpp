@@ -3,6 +3,7 @@
 
 #include "OTA.h"
 #include "heartbeat.h"
+#include "heatpump_client.h"
 #include "homekit.h"
 #include "wifi.h"
 
@@ -17,6 +18,7 @@ void setup() {
 
     setupWiFi(NAME_PREFIX);
     setupOTA(NAME_PREFIX);
+    // setupHeatPump();
     homekit_setup();
     digitalWrite(LED_BUILTIN, HIGH);
 }
@@ -25,4 +27,5 @@ void loop() {
     // heartbeat(10, true);
     handleOTA();
     homekit_loop();
+    // updateHeatPump();
 }

@@ -4,30 +4,11 @@
 
 #include "heater_cooler_service.h"
 
-#define HEATER_COOLER_INACTIVE 0
-#define HEATER_COOLER_ACTIVE 1
-
-#define HEATER_COOLER_STATE_INACTIVE 0
-#define HEATER_COOLER_STATE_IDLE 1
-#define HEATER_COOLER_STATE_HEATING 2
-#define HEATER_COOLER_STATE_COOLING 3
-
-#define HEATER_COOLER_TARGET_STATE_AUTO 0
-#define HEATER_COOLER_TARGET_STATE_HEAT 1
-#define HEATER_COOLER_TARGET_STATE_COOL 2
-
 uint8_t heater_cooler_active = HEATER_COOLER_INACTIVE;
 uint8_t current_heater_cooler_state = HEATER_COOLER_STATE_INACTIVE;
 uint8_t target_heater_cooler_state = HEATER_COOLER_TARGET_STATE_AUTO;
 float cooling_threshold_temperature = 26;
 float heating_threshold_temperature = 16;
-
-// forward declarations
-homekit_characteristic_t ch_heater_cooler_active;
-homekit_characteristic_t ch_current_heater_cooler_state;
-homekit_characteristic_t ch_cooling_threshold_temperature;
-homekit_characteristic_t ch_heating_threshold_temperature;
-homekit_characteristic_t ch_heater_cooler_current_temperature;
 
 void update_state() {
     float current_temperature = ch_heater_cooler_current_temperature.value.float_value;
