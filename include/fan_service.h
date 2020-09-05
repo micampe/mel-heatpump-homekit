@@ -12,6 +12,8 @@
 extern homekit_characteristic_t ch_fan_active;
 extern homekit_characteristic_t ch_fan_rotation_speed;
 extern homekit_characteristic_t ch_fan_swing_mode;
+extern homekit_characteristic_t ch_fan_current_state;
+extern homekit_characteristic_t ch_fan_target_state;
 
 extern homekit_service_t fan_service;
 

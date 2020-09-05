@@ -1,9 +1,11 @@
 #include <Arduino.h>
+#include <homekit/characteristics.h>
 
-#include "homekit/homekit.h"
 #include "heater_cooler_service.h"
 #include "heatpump_client.h"
+#include "homekit/homekit.h"
 #include "log.h"
+#include "thermostat_service.h"
 
 HeatPump hp;
 
@@ -11,22 +13,23 @@ void updateHeatPumpMode(heatpumpSettings settings) {
     if (strncmp(settings.mode, "COOL", 4) == 0) {
         DEBUG_PRINTLN("Mode COOL");
         homekit_characteristic_notify(&ch_target_heater_cooler_state, HOMEKIT_UINT8_CPP(HEATER_COOLER_TARGET_STATE_COOL));
+        homekit_characteristic_notify(&ch_thermostat_target_heating_cooling_state, HOMEKIT_UINT8_CPP(HOMEKIT_TARGET_HEATING_COOLING_STATE_COOL));
     } else if (strncmp(settings.mode, "HEAT", 4) == 0) {
         DEBUG_PRINTLN("Mode HEAT");
         homekit_characteristic_notify(&ch_target_heater_cooler_state, HOMEKIT_UINT8_CPP(HEATER_COOLER_TARGET_STATE_HEAT));
+        homekit_characteristic_notify(&ch_thermostat_target_heating_cooling_state, HOMEKIT_UINT8_CPP(HOMEKIT_TARGET_HEATING_COOLING_STATE_HEAT));
     } else if (strncmp(settings.mode, "AUTO", 4) == 0) {
         DEBUG_PRINTLN("Mode AUTO");
         homekit_characteristic_notify(&ch_target_heater_cooler_state, HOMEKIT_UINT8_CPP(HEATER_COOLER_TARGET_STATE_AUTO));
+        homekit_characteristic_notify(&ch_thermostat_target_heating_cooling_state, HOMEKIT_UINT8_CPP(HOMEKIT_TARGET_HEATING_COOLING_STATE_AUTO));
     } else if (strncmp(settings.mode, "DRY", 3) == 0) {
         DEBUG_PRINTLN("Mode DRY");
-        // TODO: dehumidifier service
         homekit_characteristic_notify(&ch_heater_cooler_active, HOMEKIT_UINT8_CPP(HEATER_COOLER_INACTIVE));
-        DEBUG_PRINTLN("Dry mode not supported yet");
+        homekit_characteristic_notify(&ch_thermostat_target_heating_cooling_state, HOMEKIT_UINT8_CPP(HOMEKIT_TARGET_HEATING_COOLING_STATE_OFF));
     } else if (strncmp(settings.mode, "FAN", 3) == 0) {
         DEBUG_PRINTLN("Mode FAN");
-        // TODO: fan service
         homekit_characteristic_notify(&ch_heater_cooler_active, HOMEKIT_UINT8_CPP(HEATER_COOLER_INACTIVE));
-        DEBUG_PRINTLN("Fan mode not supported yet");
+        homekit_characteristic_notify(&ch_thermostat_target_heating_cooling_state, HOMEKIT_UINT8_CPP(HOMEKIT_TARGET_HEATING_COOLING_STATE_OFF));
     }
 }
 
@@ -63,6 +66,9 @@ void updateFanSpeed(heatpumpSettings settings) {
 }
 
 void updateTemperatureSetting(heatpumpSettings settings) {
+    DEBUG_PRINT("Setting thermostat target temperature: ");
+    DEBUG_PRINTLN(settings.temperature);
+    homekit_characteristic_notify(&ch_thermostat_target_temperature, HOMEKIT_FLOAT_CPP(settings.temperature));
     if (strncmp(settings.mode, "COOL", 4) == 0) {
         DEBUG_PRINT("Setting cooling threshold temperature: ");
         DEBUG_PRINTLN(settings.temperature);
@@ -93,12 +99,14 @@ void settingsChanged() {
     } else {
         DEBUG_PRINTLN("Heat pump is OFF");
         homekit_characteristic_notify(&ch_heater_cooler_active, HOMEKIT_UINT8_CPP(HEATER_COOLER_INACTIVE));
+        homekit_characteristic_notify(&ch_thermostat_target_heating_cooling_state, HOMEKIT_UINT8_CPP(HOMEKIT_TARGET_HEATING_COOLING_STATE_OFF));
     }
 }
 
 void statusChanged(heatpumpStatus status) {
     DEBUG_PRINTLN("Status changed");
     homekit_characteristic_notify(&ch_heater_cooler_current_temperature, HOMEKIT_FLOAT_CPP(status.roomTemperature));
+    homekit_characteristic_notify(&ch_thermostat_current_temperature, HOMEKIT_FLOAT_CPP(status.roomTemperature));
     if (status.operating) {
         homekit_characteristic_notify(&ch_heater_cooler_active, HOMEKIT_UINT8_CPP(HEATER_COOLER_ACTIVE));
     } else {
