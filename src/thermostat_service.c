@@ -14,19 +14,19 @@ void update_thermostat() {
 
     uint8_t current_heating_cooling_state;
     if (target_heating_cooling_state == HOMEKIT_TARGET_HEATING_COOLING_STATE_AUTO && current_temperature < target_temperature) {
-        serial_println("Mode auto heat");
+        serial_println("State auto heat");
         current_heating_cooling_state = HOMEKIT_CURRENT_HEATING_COOLING_STATE_HEAT;
     } else if (target_heating_cooling_state == HOMEKIT_TARGET_HEATING_COOLING_STATE_AUTO && current_temperature > target_temperature) {
-        serial_println("Mode auto cool");
+        serial_println("State auto cool");
         current_heating_cooling_state = HOMEKIT_CURRENT_HEATING_COOLING_STATE_COOL;
     } else if (target_heating_cooling_state == HOMEKIT_TARGET_HEATING_COOLING_STATE_COOL && current_temperature > target_temperature) {
-        serial_println("Mode cool");
+        serial_println("State cool");
         current_heating_cooling_state = HOMEKIT_CURRENT_HEATING_COOLING_STATE_COOL;
     } else if (target_heating_cooling_state == HOMEKIT_TARGET_HEATING_COOLING_STATE_HEAT && current_temperature < target_temperature) {
-        serial_println("Mode heat");
+        serial_println("State heat");
         current_heating_cooling_state = HOMEKIT_CURRENT_HEATING_COOLING_STATE_HEAT;
     } else {
-        serial_println("Mode OFF");
+        serial_println("State OFF");
         current_heating_cooling_state = HOMEKIT_CURRENT_HEATING_COOLING_STATE_OFF;
     }
 

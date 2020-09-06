@@ -87,6 +87,44 @@ void onConnect() {
     DEBUG_PRINTLN("Heat pump connected");
 }
 
+void update_thermostat_operating_status() {
+    uint8_t target_heating_cooling_state = ch_thermostat_target_heating_cooling_state.value.uint8_value;
+    float target_temperature = ch_thermostat_target_temperature.value.float_value;
+    float current_temperature = ch_thermostat_current_temperature.value.float_value;
+    Serial.printf("Current temp: %.2\nf", current_temperature);
+    Serial.printf("Target temp: %.2f\n", target_temperature);
+
+    uint8_t current_heating_cooling_state;
+    if (current_temperature < target_temperature) {
+        if (target_heating_cooling_state == HOMEKIT_TARGET_HEATING_COOLING_STATE_AUTO) {
+            Serial.println("State auto heat");
+            current_heating_cooling_state = HOMEKIT_CURRENT_HEATING_COOLING_STATE_HEAT;
+        } else if (target_heating_cooling_state == HOMEKIT_TARGET_HEATING_COOLING_STATE_HEAT) {
+            Serial.println("State heat");
+            current_heating_cooling_state = HOMEKIT_CURRENT_HEATING_COOLING_STATE_HEAT;
+        } else {
+            Serial.println("State OFF<");
+            current_heating_cooling_state = HOMEKIT_CURRENT_HEATING_COOLING_STATE_OFF;
+        }
+    } else if (current_temperature > target_temperature) {
+        if (target_heating_cooling_state == HOMEKIT_TARGET_HEATING_COOLING_STATE_AUTO) {
+            Serial.println("State auto cool");
+            current_heating_cooling_state = HOMEKIT_CURRENT_HEATING_COOLING_STATE_COOL;
+        } else if (target_heating_cooling_state == HOMEKIT_TARGET_HEATING_COOLING_STATE_COOL) {
+            Serial.println("State cool");
+            current_heating_cooling_state = HOMEKIT_CURRENT_HEATING_COOLING_STATE_COOL;
+        } else {
+            Serial.println("State OFF>");
+            current_heating_cooling_state = HOMEKIT_CURRENT_HEATING_COOLING_STATE_OFF;
+        }
+    } else {
+        Serial.println("State OFF=");
+        current_heating_cooling_state = HOMEKIT_CURRENT_HEATING_COOLING_STATE_OFF;
+    }
+
+    homekit_characteristic_notify(&ch_thermostat_current_heating_cooling_state, HOMEKIT_UINT8_CPP(current_heating_cooling_state));
+}
+
 void settingsChanged() {
     DEBUG_PRINTLN("Settings changed");
     heatpumpSettings settings = hp.getSettings();
@@ -109,8 +147,10 @@ void statusChanged(heatpumpStatus status) {
     homekit_characteristic_notify(&ch_thermostat_current_temperature, HOMEKIT_FLOAT_CPP(status.roomTemperature));
     if (status.operating) {
         homekit_characteristic_notify(&ch_heater_cooler_active, HOMEKIT_UINT8_CPP(HEATER_COOLER_ACTIVE));
+        update_thermostat_operating_status();
     } else {
         homekit_characteristic_notify(&ch_heater_cooler_active, HOMEKIT_UINT8_CPP(HEATER_COOLER_INACTIVE));
+        homekit_characteristic_notify(&ch_thermostat_current_heating_cooling_state, HOMEKIT_UINT8_CPP(HOMEKIT_CURRENT_HEATING_COOLING_STATE_OFF));
     }
 }
 
@@ -118,6 +158,7 @@ void setupHeatPump() {
     hp.setOnConnectCallback(&onConnect);
     hp.setSettingsChangedCallback(&settingsChanged);
     hp.setStatusChangedCallback(&statusChanged);
+    hp.enableAutoUpdate();
     hp.connect(&Serial);
 }
 
