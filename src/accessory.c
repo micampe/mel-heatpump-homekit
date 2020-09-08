@@ -5,7 +5,6 @@
 
 #include "dehumidifier_service.h"
 #include "fan_service.h"
-#include "heater_cooler_service.h"
 #include "log_c.h"
 #include "thermostat_service.h"
 
@@ -53,7 +52,6 @@ homekit_accessory_t *accessories[] = {
                 NULL
             }),
             &service_thermostat,
-            // &service_heater_cooler,
             &fan_service,
             // &dehumidifier_service,
             HOMEKIT_SERVICE(LIGHTBULB, .characteristics = (homekit_characteristic_t *[]){
