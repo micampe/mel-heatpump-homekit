@@ -15,10 +15,12 @@ void set_fan_active(homekit_value_t value) {
     ch_fan_active.value.uint8_value = fan_active;
     DEBUG_LOG_VALUE_C("Fan active:", fan_active);
     if (fan_active == FAN_ACTIVE) {
-        DEBUG_LOG_C("Set fan state: idle");
-        homekit_characteristic_notify(&ch_fan_current_state, HOMEKIT_UINT8(1));
+        if (fan_rotation_speed <= 0) {
+            DEBUG_LOG_C("Fan state: idle");
+            homekit_characteristic_notify(&ch_fan_current_state, HOMEKIT_UINT8(1));
+        }
     } else {
-        DEBUG_LOG_C("Set fan state: inactive");
+        DEBUG_LOG_C("Fan state: inactive");
         homekit_characteristic_notify(&ch_fan_current_state, HOMEKIT_UINT8(0));
     }
 }
