@@ -131,14 +131,33 @@ void statusChanged(heatpumpStatus status) {
     }
 }
 
+void set_target_heating_cooling_state(homekit_value_t value) {
+    uint8_t target_heating_cooling_state = value.uint8_value;
+    ch_thermostat_target_heating_cooling_state.value.uint8_value = target_heating_cooling_state;
+    DEBUG_LOG("HK set target state: %d\n", target_heating_cooling_state);
+}
+
+void set_target_temperature(homekit_value_t value) {
+    float target_temperature = value.float_value;
+    ch_thermostat_target_temperature.value.uint8_value = target_temperature;
+    DEBUG_LOG("HK set target temperature: %.2f\n", target_temperature);
+}
+
 void setupHeatPump() {
+    ch_thermostat_target_heating_cooling_state.setter = set_target_heating_cooling_state;
+    ch_thermostat_target_temperature.setter = set_target_temperature;
+
     hp.setOnConnectCallback(&onConnect);
     hp.setSettingsChangedCallback(&settingsChanged);
     hp.setStatusChangedCallback(&statusChanged);
     hp.enableAutoUpdate();
-    hp.connect(&Serial);
+    // hp.connect(&Serial);
 }
 
 void updateHeatPump() {
+    if (!hp.isConnected()) {
+        return;
+    }
+
     hp.sync();
 }

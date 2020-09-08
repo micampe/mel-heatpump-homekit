@@ -28,7 +28,7 @@ void setup() {
 
     setupWiFi(NAME_PREFIX);
     setupOTA(NAME_PREFIX);
-    // setupHeatPump();
+    setupHeatPump();
     homekit_setup();
 
     pinMode(LED_BUILTIN, OUTPUT);
@@ -39,5 +39,5 @@ void loop() {
     // heartbeat(10, true);
     handleOTA();
     homekit_loop();
-    // updateHeatPump();
+    updateHeatPump();
 }
