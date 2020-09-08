@@ -4,7 +4,7 @@
 #include <HardwareSerial.h>
 #include <TelnetStream.h>
 
-#ifdef MIEHK_DEBUG
+#if MIEHK_DEBUG
 
 #define DEBUG_LOG(...) do { \
 	Serial.printf(__VA_ARGS__); \

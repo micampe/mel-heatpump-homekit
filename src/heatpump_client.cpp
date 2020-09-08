@@ -141,6 +141,10 @@ void set_target_temperature(homekit_value_t value) {
     float target_temperature = value.float_value;
     ch_thermostat_target_temperature.value.uint8_value = target_temperature;
     DEBUG_LOG("HK set target temperature: %.2f\n", target_temperature);
+    
+#if CONNECT_HEAT_PUMP
+    hp.setTemperature(target_temperature);
+#endif
 }
 
 void setupHeatPump() {
@@ -151,7 +155,10 @@ void setupHeatPump() {
     hp.setSettingsChangedCallback(&settingsChanged);
     hp.setStatusChangedCallback(&statusChanged);
     hp.enableAutoUpdate();
-    // hp.connect(&Serial);
+#if CONNECT_HEAT_PUMP
+    if (!hp.connect(&Serial))
+#endif
+        DEBUG_LOG("HP not connected\n");
 }
 
 void updateHeatPump() {
