@@ -6,7 +6,7 @@
 #include "dehumidifier_service.h"
 #include "fan_service.h"
 #include "heater_cooler_service.h"
-#include "serial_bridge.h"
+#include "log_c.h"
 #include "thermostat_service.h"
 
 #define ACCESSORY_NAME  ("HVAC")
@@ -18,11 +18,11 @@
 homekit_characteristic_t accessory_name = HOMEKIT_CHARACTERISTIC_(NAME, ACCESSORY_NAME);
 
 void accessory_init() {
-    serial_println("accessory init");
+    DEBUG_LOG_C("accessory init");
 }
 
 void accessory_identify(homekit_value_t _value) {
-    serial_println("accessory identify");
+    DEBUG_LOG_C("accessory identify");
 }
 
 #define LED_ON LOW

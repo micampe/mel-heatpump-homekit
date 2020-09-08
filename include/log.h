@@ -1,12 +1,20 @@
-#include <Arduino.h>
+#ifndef LOG_H
+#define LOG_H
+
+#include <HardwareSerial.h>
 #include <TelnetStream.h>
 
-#define DEBUG_PRINT(value, ...) do { \
-	Serial.print(value, ##__VA_ARGS__); \
-	TelnetStream.print(value, ##__VA_ARGS__); \
+#ifdef MIEHK_DEBUG
+
+#define DEBUG_LOG(...) do { \
+	Serial.printf(__VA_ARGS__); \
+	TelnetStream.printf(__VA_ARGS__); \
 } while(0)
 
-#define DEBUG_PRINTLN(value, ...) do { \
-	Serial.println(value, ##__VA_ARGS__); \
-	TelnetStream.println(value, ##__VA_ARGS__); \
-} while(0)
+#else
+
+#define DEBUG_LOG(...)
+
+#endif // DEBUG
+
+#endif // LOG_H

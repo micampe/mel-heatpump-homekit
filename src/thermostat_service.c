@@ -2,6 +2,7 @@
 #include <homekit/homekit.h>
 #include <homekit/characteristics.h>
 
+#include "log_c.h"
 #include "thermostat_service.h"
 
 float target_temperature = 23.5;
@@ -9,24 +10,24 @@ uint8_t target_heating_cooling_state = HOMEKIT_TARGET_HEATING_COOLING_STATE_OFF;
 
 void update_thermostat() {
     float current_temperature = ch_thermostat_current_temperature.value.float_value;
-    serial_log_value("current temp: ", (int)current_temperature);
-    serial_log_value("target temp: ", (int)target_temperature);
+    DEBUG_LOG_VALUE_C("current temp:", current_temperature);
+    DEBUG_LOG_VALUE_C("target temp:", target_temperature);
 
     uint8_t current_heating_cooling_state;
     if (target_heating_cooling_state == HOMEKIT_TARGET_HEATING_COOLING_STATE_AUTO && current_temperature < target_temperature) {
-        serial_println("State auto heat");
+        DEBUG_LOG_C("State auto heat");
         current_heating_cooling_state = HOMEKIT_CURRENT_HEATING_COOLING_STATE_HEAT;
     } else if (target_heating_cooling_state == HOMEKIT_TARGET_HEATING_COOLING_STATE_AUTO && current_temperature > target_temperature) {
-        serial_println("State auto cool");
+        DEBUG_LOG_C("State auto cool");
         current_heating_cooling_state = HOMEKIT_CURRENT_HEATING_COOLING_STATE_COOL;
     } else if (target_heating_cooling_state == HOMEKIT_TARGET_HEATING_COOLING_STATE_COOL && current_temperature > target_temperature) {
-        serial_println("State cool");
+        DEBUG_LOG_C("State cool");
         current_heating_cooling_state = HOMEKIT_CURRENT_HEATING_COOLING_STATE_COOL;
     } else if (target_heating_cooling_state == HOMEKIT_TARGET_HEATING_COOLING_STATE_HEAT && current_temperature < target_temperature) {
-        serial_println("State heat");
+        DEBUG_LOG_C("State heat");
         current_heating_cooling_state = HOMEKIT_CURRENT_HEATING_COOLING_STATE_HEAT;
     } else {
-        serial_println("State OFF");
+        DEBUG_LOG_C("State OFF");
         current_heating_cooling_state = HOMEKIT_CURRENT_HEATING_COOLING_STATE_OFF;
     }
 
@@ -36,14 +37,14 @@ void update_thermostat() {
 void set_target_heating_cooling_state(homekit_value_t value) {
     target_heating_cooling_state = value.uint8_value;
     ch_thermostat_target_heating_cooling_state.value.uint8_value = target_heating_cooling_state;
-    serial_log_value("Set target heating cooling state: ", target_heating_cooling_state);
+    DEBUG_LOG_VALUE_C("Set target heating cooling state:", target_heating_cooling_state);
     update_thermostat();
 }
 
 void set_target_temperature(homekit_value_t value) {
     target_temperature = value.float_value;
     ch_thermostat_target_temperature.value.uint8_value = target_temperature;
-    serial_log_value("Set target temperature: ", (int)target_temperature);
+    DEBUG_LOG_VALUE_C("Set target temperature:", target_temperature);
     update_thermostat();
 }
 
