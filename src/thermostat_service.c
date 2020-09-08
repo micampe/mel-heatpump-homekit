@@ -5,7 +5,9 @@
 #include "log_c.h"
 #include "thermostat_service.h"
 
-float target_temperature = 23.5;
+#define INITIAL_TARGET_TEMPERATURE 18
+
+float target_temperature = INITIAL_TARGET_TEMPERATURE;
 uint8_t target_heating_cooling_state = HOMEKIT_TARGET_HEATING_COOLING_STATE_OFF;
 
 void update_thermostat() {
@@ -61,7 +63,7 @@ homekit_characteristic_t ch_thermostat_current_temperature = HOMEKIT_CHARACTERIS
 
 homekit_characteristic_t ch_thermostat_target_temperature = HOMEKIT_CHARACTERISTIC_(
     TARGET_TEMPERATURE,
-    18,
+    INITIAL_TARGET_TEMPERATURE,
     .setter = set_target_temperature,
     .min_value = (float[]){16},
     .max_value = (float[]){31});
