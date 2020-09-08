@@ -3,6 +3,7 @@
 
 #include "accessory.h"
 #include "homekit.h"
+#include "log.h"
 
 void homekit_setup() {
     accessory_init();
@@ -19,10 +20,10 @@ void homekit_setup() {
 
 void homekit_loop() {
     arduino_homekit_loop();
-    // static uint32_t next_heap_millis = 0;
-    // uint32_t time = millis();
-    // if (time > next_heap_millis) {
-    //  SIMPLE_INFO("heap: %d, sockets: %d", ESP.getFreeHeap(), arduino_homekit_connected_clients_count());
-    //  next_heap_millis = time + 5000;
-    // }
+    static uint32_t next_heap_millis = 0;
+    uint32_t time = millis();
+    if (time > next_heap_millis) {
+        DEBUG_LOG("heap: %d, sockets: %d\n", ESP.getFreeHeap(), arduino_homekit_connected_clients_count());
+        next_heap_millis = time + 5000;
+    }
 }

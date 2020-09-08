@@ -28,15 +28,29 @@ void setup() {
 
     setupWiFi(NAME_PREFIX);
     setupOTA(NAME_PREFIX);
-    setupHeatPump();
+
+    // Delay so I have time to connect to the log
+    for (int i = 0; i < 100; i++) {
+        delay(100);
+        if (i % 10 == 0) {
+            DEBUG_LOG("%d ", (int)(10 - i / 10));
+        }
+    }
+    DEBUG_LOG("\n");
+
+    DEBUG_LOG("Initializing HomeKit...\n");
     homekit_setup();
 
+    DEBUG_LOG("Connecting to heat pump...\n");
+    setupHeatPump();
+
+    DEBUG_LOG("Setup done.\n");
     pinMode(LED_BUILTIN, OUTPUT);
     digitalWrite(LED_BUILTIN, HIGH);
 }
 
 void loop() {
-    // heartbeat(10, true);
+    // heartbeat(10, false);
     handleOTA();
     homekit_loop();
     updateHeatPump();

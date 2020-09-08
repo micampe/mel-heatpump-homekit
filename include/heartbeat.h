@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <TelnetStream.h>
 
 #define MICROSEC(s) (s * 1000000L)
 
@@ -16,6 +17,7 @@ void heartbeat(unsigned seconds, bool blink) {
     }
 
     Serial.print(".");
+    TelnetStream.print(".");
     counter = micros() + MICROSEC(seconds);
   }
 }
