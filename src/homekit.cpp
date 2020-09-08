@@ -5,7 +5,6 @@
 #include "homekit.h"
 
 void homekit_setup() {
-    // homekit_storage_reset();
     accessory_init();
 
     uint8_t mac[WL_MAC_ADDR_LENGTH];
