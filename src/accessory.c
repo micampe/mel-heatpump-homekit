@@ -53,7 +53,7 @@ homekit_accessory_t *accessories[] = {
             }),
             &service_thermostat,
             &fan_service,
-            // &dehumidifier_service,
+            &dehumidifier_service,
             HOMEKIT_SERVICE(LIGHTBULB, .characteristics = (homekit_characteristic_t *[]){
                 HOMEKIT_CHARACTERISTIC(NAME, "Led"), 
                 &ch_led_on, 
