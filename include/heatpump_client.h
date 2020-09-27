@@ -5,7 +5,7 @@
 
 extern HeatPump hp;
 
-extern void setupHeatPump();
+extern bool setupHeatPump();
 extern void updateHeatPump();
 
 #endif

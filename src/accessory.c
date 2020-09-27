@@ -17,11 +17,9 @@
 homekit_characteristic_t accessory_name = HOMEKIT_CHARACTERISTIC_(NAME, ACCESSORY_NAME);
 
 void accessory_init() {
-    DEBUG_LOG_C("accessory init");
 }
 
 void accessory_identify(homekit_value_t _value) {
-    DEBUG_LOG_C("accessory identify");
 }
 
 #define LED_ON LOW

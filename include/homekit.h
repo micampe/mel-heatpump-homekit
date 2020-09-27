@@ -3,7 +3,7 @@
 
 #include <arduino_homekit_server.h>
 
-void homekit_setup();
+void homekit_setup(char *name);
 void homekit_loop();
 
 #endif

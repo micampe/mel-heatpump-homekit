@@ -2,7 +2,6 @@
 #define LOG_H
 
 #include <HardwareSerial.h>
-#include <TelnetStream.h>
 
 #if MIEHK_DEBUG
 
