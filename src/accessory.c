@@ -9,10 +9,10 @@
 #include "thermostat_service.h"
 
 #define ACCESSORY_NAME  ("HVAC")
-#define ACCESSORY_SN  ("00001")
-#define ACCESSORY_MANUFACTURER ("Arduino")
+#define ACCESSORY_SN  GIT_DESCRIBE
+#define ACCESSORY_MANUFACTURER ("github.com micampe")
 #define ACCESSORY_MODEL  ("ESP8266")
-#define ACCESSORY_FW_REV  ("1.0")
+#define ACCESSORY_FW_REV  GIT_COMMITS
 
 homekit_characteristic_t accessory_name = HOMEKIT_CHARACTERISTIC_(NAME, ACCESSORY_NAME);
 
