@@ -158,10 +158,11 @@ void setupHeatPump() {
     hp.enableExternalUpdate();
     if (hp.connect(&Serial)) {
         DEBUG_LOG("HP connection successful\n");
-        hp.sync();
     } else {
         DEBUG_LOG("HP connection failed\n");
     }
+#else
+    DEBUG_LOG("HP connection disabled\n");
 #endif
 }
 

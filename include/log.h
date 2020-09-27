@@ -8,7 +8,6 @@
 
 #define DEBUG_LOG(...) do { \
 	Serial.printf(__VA_ARGS__); \
-	TelnetStream.printf(__VA_ARGS__); \
 } while(0)
 
 #else
