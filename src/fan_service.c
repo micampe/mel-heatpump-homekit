@@ -68,14 +68,16 @@ void set_fan_target_mode(homekit_value_t value) {
 }
 
 homekit_characteristic_t ch_fan_active = HOMEKIT_CHARACTERISTIC_(ACTIVE, FAN_INACTIVE,
-    .setter = set_fan_active);
-homekit_characteristic_t ch_fan_rotation_speed = HOMEKIT_CHARACTERISTIC_(ROTATION_SPEED, 10,
-    .setter = set_fan_rotation_speed);
+        .setter = set_fan_active);
+homekit_characteristic_t ch_fan_rotation_speed = HOMEKIT_CHARACTERISTIC_( ROTATION_SPEED, 2,
+        .setter = set_fan_rotation_speed,
+        .min_value = (float[]){0},
+        .max_value = (float[]){5});
 homekit_characteristic_t ch_fan_swing_mode = HOMEKIT_CHARACTERISTIC_(SWING_MODE, FAN_SWING_DISABLED,
-    .setter = set_fan_swing_mode);
+        .setter = set_fan_swing_mode);
 homekit_characteristic_t ch_fan_current_state = HOMEKIT_CHARACTERISTIC_(CURRENT_FAN_STATE, 0);
 homekit_characteristic_t ch_fan_target_state = HOMEKIT_CHARACTERISTIC_(TARGET_FAN_STATE, 1,
-    .setter = set_fan_target_mode);
+        .setter = set_fan_target_mode);
 
 homekit_service_t fan_service = HOMEKIT_SERVICE_(FAN2,
     .characteristics = (homekit_characteristic_t *[]) {
