@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <ArduinoOTA.h>
 #include <DoubleResetDetect.h>
 #include <HeatPump.h>
 #include <Ticker.h>
@@ -20,7 +21,7 @@ Ticker timer;
 homekit_server_t *homekit;
 
 void blink() {
-  digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));    
+    digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));    
 }
 
 void stopBlinker() {
@@ -70,6 +71,10 @@ void setup() {
         }
     }
 
+    Serial.println("\nInitializing OTA...");
+    // no mDNS, HomeKit will do that
+    ArduinoOTA.begin(false);
+
     Serial.println("\nStarting KomeKit server...");
     delay(500);
     homekit_setup(ssid);
@@ -78,6 +83,7 @@ void setup() {
         Serial.println("Waiting for accessory pairing");
         while (!homekit->paired) {
             arduino_homekit_loop();
+            ArduinoOTA.handle();
             yield();
         }
         Serial.println("Paired, waiting for clients");
@@ -106,6 +112,7 @@ void setup() {
 }
 
 void loop() {
+    ArduinoOTA.handle();
     homekit_loop();
     if (heatpump.isConnected()) {
         heatpump.sync();
