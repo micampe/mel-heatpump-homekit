@@ -37,7 +37,7 @@ void wifiConnectionFailed() {
 }
 
 void wifiConfigModeCallback(WiFiManager *wifiManager) {
-    blinker.attach(0.5, blink);
+    blinker.attach(0.66, blink);
 }
 
 void setup() {
@@ -45,7 +45,7 @@ void setup() {
     Serial.println();
 
     pinMode(LED_BUILTIN, OUTPUT);
-    blinker.attach(0.8, blink);
+    blinker.attach(1, blink);
 
     char ssid[25];
     sprintf(ssid, NAME_PREFIX " %06x", ESP.getChipId());
@@ -74,19 +74,19 @@ void setup() {
     delay(500);
     homekit_setup(ssid);
     homekit = arduino_homekit_get_running_server();
-    // if (!homekit->paired) {
-    //     Serial.println("Waiting for accessory pairing");
-    //     while (!homekit->paired) {
-    //         arduino_homekit_loop();
-    //         yield();
-    //     }
-    //     Serial.println("Paired, waiting for clients");
-    //     while (arduino_homekit_connected_clients_count() == 0) {
-    //         yield();
-    //     }
-    //     Serial.printf("%d clients connected.\n", arduino_homekit_connected_clients_count());
-    //     delay(1000);
-    // }
+    if (!homekit->paired) {
+        Serial.println("Waiting for accessory pairing");
+        while (!homekit->paired) {
+            arduino_homekit_loop();
+            yield();
+        }
+        Serial.println("Paired, waiting for clients");
+        while (arduino_homekit_connected_clients_count() == 0) {
+            yield();
+        }
+        Serial.printf("%d clients connected.\n", arduino_homekit_connected_clients_count());
+        delay(1000);
+    }
 
     if (homekit->paired) {
         Serial.println("\nConnecting to heat pump...");
@@ -107,4 +107,7 @@ void setup() {
 
 void loop() {
     homekit_loop();
+    if (heatpump.isConnected()) {
+        heatpump.sync();
+    }
 }
