@@ -7,6 +7,7 @@
 #include <arduino_homekit_server.h>
 
 #include "accessory.h"
+#include "debug.h"
 #include "heatpump_client.h"
 
 #define NAME_PREFIX "MIE_HVAC"
@@ -75,34 +76,46 @@ void setup() {
         }
     }
 
-    Serial.println("\nInitializing OTA...");
+    Serial.println("Initializing remote debug...");
+    blinker.attach(0.3, blink);
+    setupRemoteDebug(ssid);
+    blinker.detach();
+
+    Serial.println("Initializing OTA...");
+    MIE_LOG("Initializing OTA...");
     // no mDNS, HomeKit will do that
     ArduinoOTA.begin(false);
 
-    Serial.println("\nStarting KomeKit server...");
+    Serial.println("Starting KomeKit server...");
+    MIE_LOG("Starting KomeKit server...");
     delay(500);
     homekit_setup(ssid);
     homekit = arduino_homekit_get_running_server();
     if (!homekit->paired) {
         blinker.attach(1, blink);
         Serial.println("Waiting for accessory pairing");
+        MIE_LOG("Waiting for accessory pairing");
         while (!homekit->paired) {
             arduino_homekit_loop();
             ArduinoOTA.handle();
+            Debug.handle();
             yield();
         }
         Serial.println("Paired, waiting for clients");
+        MIE_LOG("Paired, waiting for clients");
         while (arduino_homekit_connected_clients_count() == 0) {
             yield();
         }
         Serial.printf("%d clients connected.\n", arduino_homekit_connected_clients_count());
+        MIE_LOG("%d clients connected.", arduino_homekit_connected_clients_count());
         blinker.detach();
         delay(500);
     }
 
     if (homekit->paired) {
         blinker.attach(0.33, blink);
-        Serial.println("\nConnecting to heat pump...");
+        Serial.println("Connecting to heat pump... no more serial logging");
+        MIE_LOG("Connecting to heat pump...");
         delay(200);
         if (setupHeatPump()) {
             blinker.detach();
@@ -112,6 +125,7 @@ void setup() {
             Serial.begin(115200);
             Serial.println();
             Serial.println("Heat pump connection failed");
+            MIE_LOG("Heat pump connection failed");
         }
     }
 
@@ -124,4 +138,5 @@ void loop() {
     if (heatpump.isConnected()) {
         heatpump.sync();
     }
+    Debug.handle();
 }
