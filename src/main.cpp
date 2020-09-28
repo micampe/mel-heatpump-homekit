@@ -15,6 +15,7 @@
 #define DRD_ADDRESS 0x00
 DoubleResetDetect drd(DRD_TIMEOUT, DRD_ADDRESS);
 
+char ssid[25];
 HeatPump heatpump;
 Ticker blinker;
 Ticker timer;
@@ -42,8 +43,7 @@ void wifiConfigModeCallback(WiFiManager *wifiManager) {
 }
 
 void homekit_setup(char *ssid) {
-    char *name = strdup(ssid);
-    accessory_name.value = HOMEKIT_STRING_CPP(name);
+    accessory_name.value = HOMEKIT_STRING_CPP(ssid);
     arduino_homekit_setup(&accessory_config);
 }
 
@@ -53,7 +53,6 @@ void setup() {
 
     pinMode(LED_BUILTIN, OUTPUT);
 
-    char ssid[25];
     sprintf(ssid, NAME_PREFIX " %06x", ESP.getChipId());
 
     WiFiManager wifiManager;
