@@ -52,7 +52,6 @@ void setup() {
     Serial.println();
 
     pinMode(LED_BUILTIN, OUTPUT);
-    blinker.attach(1, blink);
 
     char ssid[25];
     sprintf(ssid, NAME_PREFIX " %06x", ESP.getChipId());
@@ -86,6 +85,7 @@ void setup() {
     homekit_setup(ssid);
     homekit = arduino_homekit_get_running_server();
     if (!homekit->paired) {
+        blinker.attach(1, blink);
         Serial.println("Waiting for accessory pairing");
         while (!homekit->paired) {
             arduino_homekit_loop();
@@ -97,10 +97,12 @@ void setup() {
             yield();
         }
         Serial.printf("%d clients connected.\n", arduino_homekit_connected_clients_count());
-        delay(1000);
+        blinker.detach();
+        delay(500);
     }
 
     if (homekit->paired) {
+        blinker.attach(0.33, blink);
         Serial.println("\nConnecting to heat pump...");
         delay(200);
         if (setupHeatPump()) {
