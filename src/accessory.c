@@ -38,8 +38,18 @@ homekit_characteristic_t ch_led_on = HOMEKIT_CHARACTERISTIC_(ON, false,
 
 homekit_characteristic_t ch_thermostat_current_heating_cooling_state = HOMEKIT_CHARACTERISTIC_(
         CURRENT_HEATING_COOLING_STATE, HOMEKIT_CURRENT_HEATING_COOLING_STATE_OFF);
+// disable auto mode
 homekit_characteristic_t ch_thermostat_target_heating_cooling_state = HOMEKIT_CHARACTERISTIC_(
-        TARGET_HEATING_COOLING_STATE, HOMEKIT_TARGET_HEATING_COOLING_STATE_OFF);
+        TARGET_HEATING_COOLING_STATE,
+        HOMEKIT_TARGET_HEATING_COOLING_STATE_OFF,
+        .valid_values = { \
+            .count = 3, \
+            .values = (uint8_t[]) { \
+                HOMEKIT_TARGET_HEATING_COOLING_STATE_OFF, \
+                HOMEKIT_TARGET_HEATING_COOLING_STATE_HEAT, \
+                HOMEKIT_TARGET_HEATING_COOLING_STATE_COOL, \
+                } \
+        });
 homekit_characteristic_t ch_thermostat_current_temperature = HOMEKIT_CHARACTERISTIC_(
         CURRENT_TEMPERATURE, 0);
 homekit_characteristic_t ch_thermostat_target_temperature = HOMEKIT_CHARACTERISTIC_(
