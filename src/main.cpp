@@ -6,8 +6,8 @@
 #include <WiFiManager.h>
 #include <arduino_homekit_server.h>
 
+#include "accessory.h"
 #include "heatpump_client.h"
-#include "homekit.h"
 
 #define NAME_PREFIX "MIE_HVAC"
 
@@ -39,6 +39,12 @@ void wifiConnectionFailed() {
 
 void wifiConfigModeCallback(WiFiManager *wifiManager) {
     blinker.attach(0.66, blink);
+}
+
+void homekit_setup(char *ssid) {
+    char *name = strdup(ssid);
+    accessory_name.value = HOMEKIT_STRING_CPP(name);
+    arduino_homekit_setup(&accessory_config);
 }
 
 void setup() {
@@ -113,7 +119,7 @@ void setup() {
 
 void loop() {
     ArduinoOTA.handle();
-    homekit_loop();
+    arduino_homekit_loop();
     if (heatpump.isConnected()) {
         heatpump.sync();
     }

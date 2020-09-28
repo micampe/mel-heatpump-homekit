@@ -1,8 +1,0 @@
-#include <homekit/types.h>
-
-extern homekit_characteristic_t ch_thermostat_current_temperature;
-extern homekit_characteristic_t ch_thermostat_target_temperature;
-extern homekit_characteristic_t ch_thermostat_current_heating_cooling_state;
-extern homekit_characteristic_t ch_thermostat_target_heating_cooling_state;
-
-extern homekit_service_t service_thermostat;
