@@ -47,8 +47,17 @@ homekit_characteristic_t ch_thermostat_target_temperature = HOMEKIT_CHARACTERIST
         16, // must always be in valid range
         .min_value = (float[]){16},
         .max_value = (float[]){31});
+// only support celsius (this is only about the hardware, HomeKit will use the
+// device region settings)
+// it doesn't seem to do anything anyway, I was hoping it would remove the
+// option in the accessory.
 homekit_characteristic_t ch_temperature_display_units = HOMEKIT_CHARACTERISTIC_(
-        TEMPERATURE_DISPLAY_UNITS, 0);
+        TEMPERATURE_DISPLAY_UNITS, 
+        0,
+        .valid_values = { \
+            .count = 1, \
+            .values = (uint8_t[]) { 0 } \
+        });
 
 homekit_service_t service_thermostat = HOMEKIT_SERVICE_(THERMOSTAT, .primary = true,
     .characteristics = (homekit_characteristic_t *[]) {
