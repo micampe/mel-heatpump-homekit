@@ -138,7 +138,7 @@ void updateThermostatOperatingStatus(bool operating) {
 
 void settingsChanged() {
     heatpumpSettings settings = heatpump.getSettings();
-    MIE_LOG("HP settings updated: power %s; mode %s; target %.1f; fan %s; v vane %s; h vane %s",
+    MIE_LOG("HP power %s; mode %s; target %.1f; fan %s; v vane %s; h vane %s",
             settings.power,
             settings.mode,
             settings.temperature,
@@ -153,9 +153,7 @@ void settingsChanged() {
 }
 
 void statusChanged(heatpumpStatus status) {
-    MIE_LOG("HP Status updated: room temperature: %.1f; operating: %s",
-            status.roomTemperature,
-            status.operating ? "YES" : "NO");
+    MIE_LOG("HP room temp: %.1f; operating: %d", status.roomTemperature, status.operating);
 
     ch_thermostat_current_temperature.value.float_value = status.roomTemperature;
     homekit_characteristic_notify(
@@ -185,6 +183,7 @@ void set_target_heating_cooling_state(homekit_value_t value) {
                 heatpump.setPowerSetting(false);
                 break;
         }
+        MIE_LOG("HK target state %d", targetState);
     }
 }
 
@@ -193,7 +192,7 @@ void set_target_temperature(homekit_value_t value) {
     ch_thermostat_target_temperature.value.uint8_value = targetTemperature;
     
     heatpump.setTemperature(targetTemperature);
-    MIE_LOG("HK set target temperature to %.1f", targetTemperature);
+    MIE_LOG("HK target temperature %.1f", targetTemperature);
 }
 
 void set_swing_horizontal(homekit_value_t value) {
@@ -205,6 +204,7 @@ void set_swing_horizontal(homekit_value_t value) {
     } else {
         heatpump.setWideVaneSetting("AUTO");
     }
+    MIE_LOG("HK hor swing %d", swing);
 }
 
 void set_swing_vertical(homekit_value_t value) {
@@ -216,6 +216,7 @@ void set_swing_vertical(homekit_value_t value) {
     } else {
         heatpump.setVaneSetting("AUTO");
     }
+    MIE_LOG("HK ver swing %d", swing);
 }
 
 bool setupHeatPump() {

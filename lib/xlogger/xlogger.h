@@ -17,7 +17,7 @@
 #define XLOGGER_VERSION      "1.0"
 
 #define TELNET_PORT          23                  // telent port for remote connection
-#define LOG_SIZE             4096                // size of log memory buffer in bytes
+#define LOG_SIZE             2048                // size of log memory buffer in bytes
 #define LOG_SEGMENT          256                 // minimal size of log rotating
 #define PRINTF_BUFFER_LENGTH 128                 // buffer length for printf execution
 #define LINE_BUFFER_LENGTH   256                 // buffer length for commands (concatinate print and println)
