@@ -92,7 +92,7 @@ void updateThermostatOperatingStatus(bool operating) {
     float target_temperature = ch_thermostat_target_temperature.value.float_value;
     float current_temperature = ch_thermostat_current_temperature.value.float_value;
 
-    if (operating) {
+    if (heatpump.getPowerSettingBool() && operating) {
         uint8_t current_heating_cooling_state;
         if (current_temperature < target_temperature) {
             if (target_heating_cooling_state == HOMEKIT_TARGET_HEATING_COOLING_STATE_AUTO) {
@@ -124,6 +124,11 @@ void updateThermostatOperatingStatus(bool operating) {
                 &ch_fan_active,
                 HOMEKIT_UINT8_CPP(FAN_ACTIVE));
     } else {
+        ch_thermostat_current_heating_cooling_state.value.uint8_value = HOMEKIT_CURRENT_HEATING_COOLING_STATE_OFF;
+        homekit_characteristic_notify(
+                &ch_thermostat_current_heating_cooling_state,
+                ch_thermostat_current_heating_cooling_state.value);
+
         ch_fan_active.value.uint8_value = FAN_INACTIVE;
         homekit_characteristic_notify(
                 &ch_fan_active,
@@ -160,8 +165,27 @@ void statusChanged(heatpumpStatus status) {
 }
 
 void set_target_heating_cooling_state(homekit_value_t value) {
-    uint8_t target_heating_cooling_state = value.uint8_value;
-    ch_thermostat_target_heating_cooling_state.value.uint8_value = target_heating_cooling_state;
+    uint8_t previousState = ch_thermostat_target_heating_cooling_state.value.uint8_value;
+    uint8_t targetState = value.uint8_value;
+
+    if (targetState != previousState) {
+        ch_thermostat_target_heating_cooling_state.value.uint8_value = targetState;
+
+        switch (targetState) {
+            // AUTO is not supported
+            case HOMEKIT_TARGET_HEATING_COOLING_STATE_COOL:
+                heatpump.setPowerSetting(true);
+                heatpump.setModeSetting("COOL");
+                break;
+            case HOMEKIT_TARGET_HEATING_COOLING_STATE_HEAT:
+                heatpump.setPowerSetting(true);
+                heatpump.setModeSetting("HEAT");
+                break;
+            case HOMEKIT_TARGET_HEATING_COOLING_STATE_OFF:
+                heatpump.setPowerSetting(false);
+                break;
+        }
+    }
 }
 
 void set_target_temperature(homekit_value_t value) {
@@ -173,7 +197,7 @@ void set_target_temperature(homekit_value_t value) {
 }
 
 bool setupHeatPump() {
-    // ch_thermostat_target_heating_cooling_state.setter = set_target_heating_cooling_state;
+    ch_thermostat_target_heating_cooling_state.setter = set_target_heating_cooling_state;
     ch_thermostat_target_temperature.setter = set_target_temperature;
 
     heatpump.setSettingsChangedCallback(settingsChanged);
