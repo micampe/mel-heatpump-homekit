@@ -2,10 +2,8 @@
 #include <homekit/characteristics.h>
 
 #include "accessory.h"
-#include "heatpump_client.h"
-#include "thermostat_service.h"
-#include "fan_service.h"
 #include "debug.h"
+#include "heatpump_client.h"
 
 HeatPump heatpump;
 

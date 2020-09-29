@@ -4,9 +4,6 @@
 #include <homekit/types.h>
 
 #include "accessory.h"
-#include "dehumidifier_service.h"
-#include "fan_service.h"
-#include "thermostat_service.h"
 
 #define ACCESSORY_NAME  ("HVAC")
 #define ACCESSORY_SN  GIT_DESCRIBE
@@ -16,6 +13,10 @@
 
 void accessory_identify(homekit_value_t _value) {
 }
+
+// all setters needs to be initialized here, but
+// they will be overridden by the heat pump client
+void set_placeholder() {}
 
 // Status LED
 
@@ -42,7 +43,7 @@ homekit_characteristic_t ch_thermostat_current_heating_cooling_state = HOMEKIT_C
 homekit_characteristic_t ch_thermostat_target_heating_cooling_state = HOMEKIT_CHARACTERISTIC_(
         TARGET_HEATING_COOLING_STATE,
         HOMEKIT_TARGET_HEATING_COOLING_STATE_OFF,
-        .setter = &set_thermostat_target_heating_cooling_state,
+        .setter = &set_placeholder,
         .valid_values = { \
             .count = 3, \
             .values = (uint8_t[]) { \
@@ -56,7 +57,7 @@ homekit_characteristic_t ch_thermostat_current_temperature = HOMEKIT_CHARACTERIS
 homekit_characteristic_t ch_thermostat_target_temperature = HOMEKIT_CHARACTERISTIC_(
         TARGET_TEMPERATURE,
         16, // must always be in valid range
-        .setter = &set_thermostat_target_temperature,
+        .setter = &set_placeholder,
         .min_value = (float[]){16},
         .max_value = (float[]){31});
 // only support celsius (this is only about the hardware, HomeKit will use the
@@ -87,7 +88,7 @@ homekit_service_t service_thermostat = HOMEKIT_SERVICE_(THERMOSTAT, .primary = t
 homekit_characteristic_t ch_dehumidifier_active = HOMEKIT_CHARACTERISTIC_(
         ACTIVE,
         DEHUMIDIFIER_INACTIVE,
-        .setter = &set_dehumidifier_active);
+        .setter = &set_placeholder);
 
 homekit_characteristic_t ch_dehumidifier_current_state = HOMEKIT_CHARACTERISTIC_(
         CURRENT_HUMIDIFIER_DEHUMIDIFIER_STATE, DEHUMIDIFIER_CURRENT_STATE_INACTIVE);
@@ -95,7 +96,7 @@ homekit_characteristic_t ch_dehumidifier_current_state = HOMEKIT_CHARACTERISTIC_
 homekit_characteristic_t ch_dehumidifier_swing_mode = HOMEKIT_CHARACTERISTIC_(
         SWING_MODE,
         DEHUMIDIFIER_SWING_DISABLED,
-        .setter = &set_dehumidifier_swing_mode);
+        .setter = &set_placeholder);
 
 homekit_characteristic_t ch_dehumidifier_relative_humidity = HOMEKIT_CHARACTERISTIC_(
         CURRENT_RELATIVE_HUMIDITY, 0);
@@ -126,19 +127,19 @@ homekit_service_t dehumidifier_service = HOMEKIT_SERVICE_(HUMIDIFIER_DEHUMIDIFIE
 homekit_characteristic_t ch_fan_active = HOMEKIT_CHARACTERISTIC_(
         ACTIVE,
         FAN_INACTIVE,
-        .setter = &set_fan_active);
+        .setter = &set_placeholder);
 
 homekit_characteristic_t ch_fan_rotation_speed = HOMEKIT_CHARACTERISTIC_(
         ROTATION_SPEED, 
         0,
-        .setter = &set_fan_rotation_speed,
+        .setter = &set_placeholder,
         .min_value = (float[]){0},
         .max_value = (float[]){5});
 
 homekit_characteristic_t ch_fan_swing_mode = HOMEKIT_CHARACTERISTIC_(
         SWING_MODE,
         FAN_SWING_DISABLED,
-        .setter = &set_fan_swing_mode);
+        .setter = &set_placeholder);
 
 homekit_characteristic_t ch_fan_current_state = HOMEKIT_CHARACTERISTIC_(
         CURRENT_FAN_STATE,
@@ -147,7 +148,7 @@ homekit_characteristic_t ch_fan_current_state = HOMEKIT_CHARACTERISTIC_(
 homekit_characteristic_t ch_fan_target_state = HOMEKIT_CHARACTERISTIC_(
         TARGET_FAN_STATE,
         FAN_TARGET_STATE_AUTO,
-        .setter = &set_fan_target_mode);
+        .setter = &set_placeholder);
 
 homekit_service_t fan_service = HOMEKIT_SERVICE_(FAN2,
     .characteristics = (homekit_characteristic_t *[]) {
@@ -179,11 +180,11 @@ homekit_accessory_t *accessories[] = {
             &service_thermostat,
             &fan_service,
             &dehumidifier_service,
-            HOMEKIT_SERVICE(LIGHTBULB, .characteristics = (homekit_characteristic_t *[]){
-                HOMEKIT_CHARACTERISTIC(NAME, "Led"), 
-                &ch_led_on, 
-                NULL
-            }),
+            // HOMEKIT_SERVICE(LIGHTBULB, .characteristics = (homekit_characteristic_t *[]){
+            //     HOMEKIT_CHARACTERISTIC(NAME, "Led"), 
+            //     &ch_led_on, 
+            //     NULL
+            // }),
             NULL
         }),
     NULL
