@@ -196,9 +196,34 @@ void set_target_temperature(homekit_value_t value) {
     MIE_LOG("HK set target temperature to %.1f", targetTemperature);
 }
 
+void set_swing_horizontal(homekit_value_t value) {
+    uint8_t swing = value.uint8_value;
+    ch_dehumidifier_swing_mode.value.uint8_value = swing;
+
+    if (swing == 1) {
+        heatpump.setWideVaneSetting("SWING");
+    } else {
+        heatpump.setWideVaneSetting("AUTO");
+    }
+}
+
+void set_swing_vertical(homekit_value_t value) {
+    uint8_t swing = value.uint8_value;
+    ch_fan_swing_mode.value.uint8_value = swing;
+
+    if (swing == 1) {
+        heatpump.setVaneSetting("SWING");
+    } else {
+        heatpump.setVaneSetting("AUTO");
+    }
+}
+
 bool setupHeatPump() {
     ch_thermostat_target_heating_cooling_state.setter = set_target_heating_cooling_state;
     ch_thermostat_target_temperature.setter = set_target_temperature;
+
+    ch_dehumidifier_swing_mode.setter = set_swing_horizontal;
+    ch_fan_swing_mode.setter = set_swing_vertical;
 
     heatpump.setSettingsChangedCallback(settingsChanged);
     heatpump.setStatusChangedCallback(statusChanged);
