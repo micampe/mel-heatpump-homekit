@@ -135,8 +135,6 @@ void setup() {
 void loop() {
     ArduinoOTA.handle();
     arduino_homekit_loop();
-    if (heatpump.isConnected()) {
-        heatpump.sync();
-    }
+    updateHeatPump();
     Debug.handle();
 }
