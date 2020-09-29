@@ -17,7 +17,6 @@
 DoubleResetDetect drd(DRD_TIMEOUT, DRD_ADDRESS);
 
 char ssid[25];
-HeatPump heatpump;
 Ticker blinker;
 Ticker timer;
 homekit_server_t *homekit;
@@ -119,6 +118,7 @@ void setup() {
         delay(200);
         if (setupHeatPump()) {
             blinker.detach();
+            MIE_LOG("Heat pump connected");
         } else {
             blinker.attach(0.1, blink);
 

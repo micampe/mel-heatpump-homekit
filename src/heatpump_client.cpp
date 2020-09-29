@@ -5,8 +5,9 @@
 #include "heatpump_client.h"
 #include "thermostat_service.h"
 #include "fan_service.h"
+#include "debug.h"
 
-HeatPump hp;
+HeatPump heatpump;
 
 void updateHeatPumpMode(heatpumpSettings settings) {
     if (strncmp(settings.mode, "COOL", 4) == 0) {
@@ -80,7 +81,15 @@ void update_thermostat_operating_status() {
 }
 
 void settingsChanged() {
-    heatpumpSettings settings = hp.getSettings();
+    heatpumpSettings settings = heatpump.getSettings();
+    MIE_LOG("HP settings updated: power %s; mode %s; target %.1f; fan %s; v vane %s; h vane %s",
+            settings.power,
+            settings.mode,
+            settings.temperature,
+            settings.fan,
+            settings.vane,
+            settings.wideVane);
+
     if (strncmp(settings.power, "ON", 2) == 0) {
         updateHeatPumpMode(settings);
         updateSwingMode(settings);
@@ -92,6 +101,10 @@ void settingsChanged() {
 }
 
 void statusChanged(heatpumpStatus status) {
+    MIE_LOG("HP Status updated: room temperature: %.1f; operating: %s",
+            status.roomTemperature,
+            status.operating ? "YES" : "NO");
+
     homekit_characteristic_notify(&ch_thermostat_current_temperature, HOMEKIT_FLOAT_CPP(status.roomTemperature));
     if (status.operating) {
         update_thermostat_operating_status();
@@ -109,24 +122,24 @@ void set_target_temperature(homekit_value_t value) {
     float target_temperature = value.float_value;
     ch_thermostat_target_temperature.value.uint8_value = target_temperature;
     
-    hp.setTemperature(target_temperature);
+    heatpump.setTemperature(target_temperature);
 }
 
 bool setupHeatPump() {
     // ch_thermostat_target_heating_cooling_state.setter = set_target_heating_cooling_state;
     // ch_thermostat_target_temperature.setter = set_target_temperature;
 
-    hp.setSettingsChangedCallback(settingsChanged);
-    hp.setStatusChangedCallback(statusChanged);
+    heatpump.setSettingsChangedCallback(settingsChanged);
+    heatpump.setStatusChangedCallback(statusChanged);
 
-    hp.enableAutoUpdate();
-    hp.enableExternalUpdate();
+    heatpump.enableAutoUpdate();
+    heatpump.enableExternalUpdate();
 
-    return hp.connect(&Serial);
+    return heatpump.connect(&Serial);
 }
 
 void updateHeatPump() {
-    if (hp.isConnected()) {
-        hp.sync();
+    if (heatpump.isConnected()) {
+        heatpump.sync();
     }
 }

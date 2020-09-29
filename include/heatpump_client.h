@@ -3,7 +3,7 @@
 
 #include <HeatPump.h>
 
-extern HeatPump hp;
+extern HeatPump heatpump;
 
 extern bool setupHeatPump();
 extern void updateHeatPump();
