@@ -135,6 +135,6 @@ void setup() {
 void loop() {
     ArduinoOTA.handle();
     arduino_homekit_loop();
-    updateHeatPump();
+    syncHeatPump();
     Debug.handle();
 }

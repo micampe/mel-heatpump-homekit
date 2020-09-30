@@ -1,11 +1,15 @@
 #include <HeatPump.h>
 #include <homekit/characteristics.h>
+#include <Ticker.h>
 
 #include "accessory.h"
 #include "debug.h"
 #include "heatpump_client.h"
 
 HeatPump heatpump;
+Ticker ticker;
+
+void scheduleHeatPumpUpdate();
 
 void updateThermostatMode(heatpumpSettings settings) {
     uint8_t currentState = ch_thermostat_target_heating_cooling_state.value.uint8_value;
@@ -183,6 +187,7 @@ void set_target_heating_cooling_state(homekit_value_t value) {
         }
         MIE_LOG("HK target state %d", targetState);
     }
+    scheduleHeatPumpUpdate();
 }
 
 void set_target_temperature(homekit_value_t value) {
@@ -190,7 +195,9 @@ void set_target_temperature(homekit_value_t value) {
     ch_thermostat_target_temperature.value.uint8_value = targetTemperature;
     
     heatpump.setTemperature(targetTemperature);
+
     MIE_LOG("HK target temperature %.1f", targetTemperature);
+    scheduleHeatPumpUpdate();
 }
 
 void set_swing_horizontal(homekit_value_t value) {
@@ -202,7 +209,9 @@ void set_swing_horizontal(homekit_value_t value) {
     } else {
         heatpump.setWideVaneSetting("AUTO");
     }
+
     MIE_LOG("HK hor swing %d", swing);
+    scheduleHeatPumpUpdate();
 }
 
 void set_swing_vertical(homekit_value_t value) {
@@ -214,7 +223,9 @@ void set_swing_vertical(homekit_value_t value) {
     } else {
         heatpump.setVaneSetting("AUTO");
     }
+
     MIE_LOG("HK ver swing %d", swing);
+    scheduleHeatPumpUpdate();
 }
 
 bool setupHeatPump() {
@@ -227,13 +238,20 @@ bool setupHeatPump() {
     heatpump.setSettingsChangedCallback(settingsChanged);
     heatpump.setStatusChangedCallback(statusChanged);
 
-    heatpump.enableAutoUpdate();
     heatpump.enableExternalUpdate();
+    heatpump.disableAutoUpdate();
 
     return heatpump.connect(&Serial);
 }
 
-void updateHeatPump() {
+#define UPDATE_INTERVAL 2
+void scheduleHeatPumpUpdate() {
+    ticker.once_scheduled(UPDATE_INTERVAL, [] {
+        heatpump.update();
+    });
+}
+
+void syncHeatPump() {
     if (heatpump.isConnected()) {
         heatpump.sync();
     }
