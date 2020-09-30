@@ -86,16 +86,14 @@ homekit_service_t service_thermostat = HOMEKIT_SERVICE_(THERMOSTAT, .primary = t
 // Dehumidifier
 
 homekit_characteristic_t ch_dehumidifier_active = HOMEKIT_CHARACTERISTIC_(
-        ACTIVE,
-        DEHUMIDIFIER_INACTIVE,
+        ACTIVE, 0,
         .setter = &set_placeholder);
 
 homekit_characteristic_t ch_dehumidifier_current_state = HOMEKIT_CHARACTERISTIC_(
         CURRENT_HUMIDIFIER_DEHUMIDIFIER_STATE, DEHUMIDIFIER_CURRENT_STATE_INACTIVE);
 
 homekit_characteristic_t ch_dehumidifier_swing_mode = HOMEKIT_CHARACTERISTIC_(
-        SWING_MODE,
-        DEHUMIDIFIER_SWING_DISABLED,
+        SWING_MODE, 0,
         .setter = &set_placeholder);
 
 homekit_characteristic_t ch_dehumidifier_relative_humidity = HOMEKIT_CHARACTERISTIC_(
@@ -125,8 +123,7 @@ homekit_service_t dehumidifier_service = HOMEKIT_SERVICE_(HUMIDIFIER_DEHUMIDIFIE
 // Fan
 
 homekit_characteristic_t ch_fan_active = HOMEKIT_CHARACTERISTIC_(
-        ACTIVE,
-        FAN_INACTIVE,
+        ACTIVE, 0,
         .setter = &set_placeholder);
 
 homekit_characteristic_t ch_fan_rotation_speed = HOMEKIT_CHARACTERISTIC_(
@@ -137,8 +134,7 @@ homekit_characteristic_t ch_fan_rotation_speed = HOMEKIT_CHARACTERISTIC_(
         .max_value = (float[]){5});
 
 homekit_characteristic_t ch_fan_swing_mode = HOMEKIT_CHARACTERISTIC_(
-        SWING_MODE,
-        FAN_SWING_DISABLED,
+        SWING_MODE, 0,
         .setter = &set_placeholder);
 
 homekit_characteristic_t ch_fan_current_state = HOMEKIT_CHARACTERISTIC_(

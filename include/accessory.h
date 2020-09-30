@@ -12,12 +12,6 @@ extern homekit_characteristic_t ch_thermostat_target_heating_cooling_state;
 
 // Dehumidifier
 
-#define DEHUMIDIFIER_INACTIVE 0
-#define DEHUMIDIFIER_ACTIVE 1
-
-#define DEHUMIDIFIER_SWING_DISABLED 0
-#define DEHUMIDIFIER_SWING_ENABLED 1
-
 #define DEHUMIDIFIER_CURRENT_STATE_INACTIVE 0
 #define DEHUMIDIFIER_CURRENT_STATE_IDLE 1
 // #define DEHUMIDIFIER_CURRENT_STATE_HUMIDIFYING 2
@@ -28,12 +22,6 @@ extern homekit_characteristic_t ch_dehumidifier_current_state;
 extern homekit_characteristic_t ch_dehumidifier_swing_mode;
 
 // Fan
-
-#define FAN_INACTIVE 0
-#define FAN_ACTIVE 1
-
-#define FAN_SWING_DISABLED 0
-#define FAN_SWING_ENABLED 1
 
 #define FAN_TARGET_STATE_MANUAL 0
 #define FAN_TARGET_STATE_AUTO 1
