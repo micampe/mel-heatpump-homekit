@@ -9,7 +9,19 @@
 HeatPump heatpump;
 Ticker ticker;
 
-void scheduleHeatPumpUpdate();
+
+#define UPDATE_INTERVAL 5
+void scheduleHeatPumpUpdate() {
+    ticker.once_scheduled(UPDATE_INTERVAL, [] {
+        heatpump.update();
+    });
+}
+
+void syncHeatPump() {
+    if (heatpump.isConnected()) {
+        heatpump.sync();
+    }
+}
 
 
 // --- Settings changes
@@ -363,17 +375,4 @@ bool setupHeatPump() {
     heatpump.disableAutoUpdate();
 
     return heatpump.connect(&Serial);
-}
-
-#define UPDATE_INTERVAL 2
-void scheduleHeatPumpUpdate() {
-    ticker.once_scheduled(UPDATE_INTERVAL, [] {
-        heatpump.update();
-    });
-}
-
-void syncHeatPump() {
-    if (heatpump.isConnected()) {
-        heatpump.sync();
-    }
 }
