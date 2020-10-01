@@ -277,7 +277,7 @@ void set_fan_active(homekit_value_t value) {
     ch_fan_active.value.uint8_value = active;
     MIE_LOG("⬅ HK fan active %d", active);
 
-    if (heatpump.getPowerSettingBool() && active == 1) {
+    if (heatpump.getPowerSettingBool() == false && active == 1) {
         heatpump.setModeSetting("FAN");
         MIE_LOG(" ⮕ HP mode fan");
     } else {
