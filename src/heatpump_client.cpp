@@ -92,21 +92,6 @@ void updateDehumidifierSettings(heatpumpSettings settings) {
     homekit_characteristic_notify(&ch_dehumidifier_swing_mode, ch_dehumidifier_swing_mode.value);
 }
 
-void settingsChanged() {
-    heatpumpSettings settings = heatpump.getSettings();
-    MIE_LOG("HP power %s; mode %s; target %.1f; fan %s; v vane %s; h vane %s",
-            settings.power,
-            settings.mode,
-            settings.temperature,
-            settings.fan,
-            settings.vane,
-            settings.wideVane);
-
-    updateThermostatSettings(settings);
-    updateFanSettings(settings);
-    updateDehumidifierSettings(settings);
-}
-
 
 // --- Status updates
 void updateThermostatOperatingStatus(bool operating) {
@@ -157,6 +142,27 @@ void updateDehumidifierOperatingStatus(bool operating) {
     }
 
     homekit_characteristic_notify(&ch_dehumidifier_current_state, ch_dehumidifier_current_state.value);
+}
+
+
+void settingsChanged() {
+    heatpumpSettings settings = heatpump.getSettings();
+    MIE_LOG("HP power %s; mode %s; target %.1f; fan %s; v vane %s; h vane %s",
+            settings.power,
+            settings.mode,
+            settings.temperature,
+            settings.fan,
+            settings.vane,
+            settings.wideVane);
+
+    updateThermostatSettings(settings);
+    updateFanSettings(settings);
+    updateDehumidifierSettings(settings);
+
+    heatpumpStatus status = heatpump.getStatus();
+    updateThermostatOperatingStatus(status.operating);
+    updateFanOperatingStatus(status.operating);
+    updateDehumidifierOperatingStatus(status.operating);
 }
 
 void statusChanged(heatpumpStatus status) {
