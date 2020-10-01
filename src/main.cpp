@@ -55,6 +55,8 @@ void setup() {
 
     sprintf(ssid, NAME_PREFIX "%06x", ESP.getChipId());
 
+    WiFi.setSleepMode(WIFI_NONE_SLEEP);
+
     WiFiManager wifiManager;
     wifiManager.setAPCallback(wifiConfigModeCallback);
     wifiManager.setTimeout(120);
