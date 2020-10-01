@@ -280,7 +280,7 @@ void set_fan_active(homekit_value_t value) {
     if (heatpump.getPowerSettingBool() == false && active == 1) {
         heatpump.setModeSetting("FAN");
         MIE_LOG(" ⮕ HP mode fan");
-    } else {
+    } else if (active == 0) {
         heatpump.setPowerSetting(false);
         MIE_LOG(" ⮕ HP fan off");
     }
