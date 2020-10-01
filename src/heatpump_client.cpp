@@ -35,7 +35,7 @@ void updateThermostatSettings(heatpumpSettings settings) {
             &ch_thermostat_target_heating_cooling_state,
             ch_thermostat_target_heating_cooling_state.value);
 
-    ch_thermostat_target_temperature.value.uint8_value = settings.temperature;
+    ch_thermostat_target_temperature.value.float_value = settings.temperature;
     homekit_characteristic_notify(
             &ch_thermostat_target_temperature,
             ch_thermostat_target_temperature.value);
@@ -162,7 +162,7 @@ void updateDehumidifierOperatingStatus(bool operating) {
 void statusChanged(heatpumpStatus status) {
     MIE_LOG("HP room temp: %.1f; operating: %d", status.roomTemperature, status.operating);
 
-    ch_thermostat_current_temperature.value.uint8_value = status.roomTemperature;
+    ch_thermostat_current_temperature.value.float_value = status.roomTemperature;
     homekit_characteristic_notify(
             &ch_thermostat_current_temperature,
             ch_thermostat_current_temperature.value);
@@ -199,7 +199,7 @@ void set_target_heating_cooling_state(homekit_value_t value) {
 
 void set_target_temperature(homekit_value_t value) {
     float targetTemperature = value.float_value;
-    ch_thermostat_target_temperature.value.uint8_value = targetTemperature;
+    ch_thermostat_target_temperature.value.float_value = targetTemperature;
 
     heatpump.setTemperature(targetTemperature);
 
@@ -207,10 +207,25 @@ void set_target_temperature(homekit_value_t value) {
     scheduleHeatPumpUpdate();
 }
 
+void set_dehumidifier_active(homekit_value_t value) {
+    uint8_t active = value.uint8_value;
+    ch_dehumidifier_active.value.uint8_value = active;
+
+    if (active == 1) {
+        heatpump.setModeSetting("DRY");
+    } else {
+        heatpump.setPowerSetting(false);
+    }
+
+    MIE_LOG("HK dehumidifier active %d", active);
+    scheduleHeatPumpUpdate();
+}
+
 void set_swing_horizontal(homekit_value_t value) {
     uint8_t swing = value.uint8_value;
     ch_dehumidifier_swing_mode.value.uint8_value = swing;
 
+    // dehumidifier controls horizontal swing
     if (swing == 1) {
         heatpump.setWideVaneSetting("SWING");
     } else {
@@ -221,10 +236,60 @@ void set_swing_horizontal(homekit_value_t value) {
     scheduleHeatPumpUpdate();
 }
 
-void set_swing_vertical(homekit_value_t value) {
+void set_fan_active(homekit_value_t value) {
+    uint8_t active = value.uint8_value;
+    ch_fan_active.value.uint8_value = active;
+
+    if (heatpump.getPowerSettingBool() && active == 1) {
+        heatpump.setModeSetting("FAN");
+    } else {
+        heatpump.setPowerSetting(false);
+    }
+
+    MIE_LOG("HK fan active %d", active);
+    scheduleHeatPumpUpdate();
+}
+
+void set_fan_speed(homekit_value_t value) {
+    float speed = value.float_value;
+    ch_fan_rotation_speed.value.float_value = speed;
+
+    if (speed < 1) {
+        heatpump.setPowerSetting(false);
+    } else if (speed < 2) {
+        heatpump.setFanSpeed("QUIET");
+    } else {
+        heatpump.setFanSpeed(String((int)speed - 1).c_str());
+    }
+
+    MIE_LOG("HK fan speed %d", (int)speed);
+    scheduleHeatPumpUpdate();
+}
+
+void set_fan_auto_mode(homekit_value_t value) {
+    uint8_t mode = value.uint8_value;
+    ch_fan_target_state.value.uint8_value = mode;
+
+    if (mode == 1) {
+        heatpump.setFanSpeed("AUTO");
+    } else {
+        int speed = (int)ch_fan_rotation_speed.value.float_value;
+        if (speed < 1) {
+            heatpump.setFanSpeed("QUIET");
+        } else {
+            heatpump.setFanSpeed(String(speed - 1).c_str());
+        }
+    }
+
+    MIE_LOG("HK fan auto %d", mode);
+    scheduleHeatPumpUpdate();
+}
+
+void set_fan_swing(homekit_value_t value) {
     uint8_t swing = value.uint8_value;
     ch_fan_swing_mode.value.uint8_value = swing;
 
+    // fan controls vertical swing
     if (swing == 1) {
         heatpump.setVaneSetting("SWING");
     } else {
@@ -239,8 +304,13 @@ bool setupHeatPump() {
     ch_thermostat_target_heating_cooling_state.setter = set_target_heating_cooling_state;
     ch_thermostat_target_temperature.setter = set_target_temperature;
 
+    ch_dehumidifier_active.setter = set_dehumidifier_active;
     ch_dehumidifier_swing_mode.setter = set_swing_horizontal;
-    ch_fan_swing_mode.setter = set_swing_vertical;
+
+    ch_fan_active.setter = set_fan_active;
+    ch_fan_rotation_speed.setter = set_fan_auto_mode;
+    ch_fan_target_state.setter = set_fan_auto_mode;
+    ch_fan_swing_mode.setter = set_fan_swing;
 
     heatpump.setSettingsChangedCallback(settingsChanged);
     heatpump.setStatusChangedCallback(statusChanged);
