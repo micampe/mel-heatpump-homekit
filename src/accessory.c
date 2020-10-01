@@ -5,10 +5,10 @@
 
 #include "accessory.h"
 
-#define ACCESSORY_NAME  ("HVAC")
-#define ACCESSORY_SN  GIT_DESCRIBE
-#define ACCESSORY_MANUFACTURER ("github.com micampe")
-#define ACCESSORY_MODEL  ("ESP8266")
+#define ACCESSORY_NAME  "Mitsubishi Air Conditioner"
+#define ACCESSORY_SN  GIT_HASH
+#define ACCESSORY_MANUFACTURER "github.com micampe"
+#define ACCESSORY_MODEL  GIT_DESCRIBE
 #define ACCESSORY_FW_REV  GIT_COMMITS
 
 void accessory_identify(homekit_value_t _value) {

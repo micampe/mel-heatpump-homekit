@@ -10,7 +10,7 @@
 #include "debug.h"
 #include "heatpump_client.h"
 
-#define NAME_PREFIX "MIE_HVAC"
+#define NAME_PREFIX "MIE Heat Pump "
 
 #define DRD_TIMEOUT 2.0
 #define DRD_ADDRESS 0x00
@@ -53,7 +53,7 @@ void setup() {
 
     pinMode(LED_BUILTIN, OUTPUT);
 
-    sprintf(ssid, NAME_PREFIX " %06x", ESP.getChipId());
+    sprintf(ssid, NAME_PREFIX "%06x", ESP.getChipId());
 
     WiFiManager wifiManager;
     wifiManager.setAPCallback(wifiConfigModeCallback);
