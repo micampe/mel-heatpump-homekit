@@ -4,3 +4,6 @@
 .vscode/launch.json
 .vscode/ipch
 .DS_Store
+.ccls
+.clang_complete
+.gcc-flags.json
