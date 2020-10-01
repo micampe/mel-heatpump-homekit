@@ -13,7 +13,7 @@ void scheduleHeatPumpUpdate();
 
 
 // --- Settings changes
-void updateThermostatMode(heatpumpSettings settings) {
+void updateThermostatSettings(heatpumpSettings settings) {
     uint8_t state = HOMEKIT_TARGET_HEATING_COOLING_STATE_OFF;
 
     if (strncmp(settings.power, "OFF", 3) == 0) {
@@ -34,27 +34,14 @@ void updateThermostatMode(heatpumpSettings settings) {
     homekit_characteristic_notify(
             &ch_thermostat_target_heating_cooling_state,
             ch_thermostat_target_heating_cooling_state.value);
+
+    ch_thermostat_target_temperature.value.uint8_value = settings.temperature;
+    homekit_characteristic_notify(
+            &ch_thermostat_target_temperature,
+            ch_thermostat_target_temperature.value);
 }
 
-void updateSwingMode(heatpumpSettings settings) {
-    // horizontal swing
-    if (strncmp(settings.wideVane, "SWING", 5) == 0) {
-        ch_dehumidifier_swing_mode.value.uint8_value = 1;
-    } else {
-        ch_dehumidifier_swing_mode.value.uint8_value = 0;
-    }
-    homekit_characteristic_notify(&ch_dehumidifier_swing_mode, ch_dehumidifier_swing_mode.value);
-
-    // vertical swing
-    if (strncmp(settings.vane, "SWING", 5) == 0) {
-        ch_fan_swing_mode.value.uint8_value = 1;
-    } else {
-        ch_fan_swing_mode.value.uint8_value = 0;
-    }
-    homekit_characteristic_notify(&ch_fan_swing_mode, ch_fan_swing_mode.value);
-}
-
-void updateFanSpeed(heatpumpSettings settings) {
+void updateFanSettings(heatpumpSettings settings) {
     int speed = 0;
     uint8_t targetState = FAN_TARGET_STATE_MANUAL;
 
@@ -77,13 +64,32 @@ void updateFanSpeed(heatpumpSettings settings) {
 
     ch_fan_target_state.value.uint8_value = targetState;
     homekit_characteristic_notify(&ch_fan_target_state, ch_fan_target_state.value);
+
+    // vertical swing
+    if (strncmp(settings.vane, "SWING", 5) == 0) {
+        ch_fan_swing_mode.value.uint8_value = 1;
+    } else {
+        ch_fan_swing_mode.value.uint8_value = 0;
+    }
+    homekit_characteristic_notify(&ch_fan_swing_mode, ch_fan_swing_mode.value);
 }
 
-void updateTargetTemperature(heatpumpSettings settings) {
-    ch_thermostat_target_temperature.value.uint8_value = settings.temperature;
-    homekit_characteristic_notify(
-            &ch_thermostat_target_temperature,
-            ch_thermostat_target_temperature.value);
+void updateDehumidifierSettings(heatpumpSettings settings) {
+    bool active = false;
+    if (strncmp(settings.mode, "DRY", 3) == 0) {
+        active = heatpump.getPowerSettingBool();
+    }
+
+    ch_dehumidifier_active.value.uint8_value = active ? 1 : 0;
+    homekit_characteristic_notify(&ch_dehumidifier_active, ch_dehumidifier_active.value);
+
+    // horizontal swing
+    if (strncmp(settings.wideVane, "SWING", 5) == 0) {
+        ch_dehumidifier_swing_mode.value.uint8_value = 1;
+    } else {
+        ch_dehumidifier_swing_mode.value.uint8_value = 0;
+    }
+    homekit_characteristic_notify(&ch_dehumidifier_swing_mode, ch_dehumidifier_swing_mode.value);
 }
 
 void settingsChanged() {
@@ -96,10 +102,9 @@ void settingsChanged() {
             settings.vane,
             settings.wideVane);
 
-    updateTargetTemperature(settings);
-    updateThermostatMode(settings);
-    updateSwingMode(settings);
-    updateFanSpeed(settings);
+    updateThermostatSettings(settings);
+    updateFanSettings(settings);
+    updateDehumidifierSettings(settings);
 }
 
 
