@@ -352,7 +352,7 @@ bool setupHeatPump() {
     ch_dehumidifier_swing_mode.setter = set_swing_horizontal;
 
     ch_fan_active.setter = set_fan_active;
-    ch_fan_rotation_speed.setter = set_fan_auto_mode;
+    ch_fan_rotation_speed.setter = set_fan_speed;
     ch_fan_target_state.setter = set_fan_auto_mode;
     ch_fan_swing_mode.setter = set_fan_swing;
 
