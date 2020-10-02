@@ -60,7 +60,7 @@ void updateThermostatSettings(heatpumpSettings settings) {
     _set_characteristic_uint8(&ch_thermostat_target_heating_cooling_state, state, true);
     _set_characteristic_float(&ch_thermostat_target_temperature, settings.temperature, true);
 
-    MIE_LOG(" ⮕ HK thermostat mode %d temp %.1f",
+    MIE_LOG(" ⮕ HK thermostat target mode %d temp %.1f",
             ch_thermostat_target_heating_cooling_state.value.uint8_value,
             ch_thermostat_target_temperature.value.float_value);
 }
@@ -143,7 +143,7 @@ void updateThermostatOperatingStatus(bool operating) {
 
     _set_characteristic_uint8(&ch_thermostat_current_heating_cooling_state, current_state, true);
 
-    MIE_LOG(" ⮕ HK thermostat mode %d temp %.1f",
+    MIE_LOG(" ⮕ HK thermostat current mode %d temp %.1f",
             ch_thermostat_current_heating_cooling_state.value.uint8_value,
             current_temperature);
 }
