@@ -90,7 +90,7 @@ homekit_characteristic_t ch_dehumidifier_active = HOMEKIT_CHARACTERISTIC_(
         .setter = &set_placeholder);
 
 homekit_characteristic_t ch_dehumidifier_current_state = HOMEKIT_CHARACTERISTIC_(
-        CURRENT_HUMIDIFIER_DEHUMIDIFIER_STATE, DEHUMIDIFIER_CURRENT_STATE_INACTIVE);
+        CURRENT_HUMIDIFIER_DEHUMIDIFIER_STATE, DEHUMIDIFIER_INACTIVE);
 
 homekit_characteristic_t ch_dehumidifier_swing_mode = HOMEKIT_CHARACTERISTIC_(
         SWING_MODE, 0,

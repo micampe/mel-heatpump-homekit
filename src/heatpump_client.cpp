@@ -24,6 +24,21 @@ void syncHeatPump() {
 }
 
 
+void _set_characteristic_uint8(homekit_characteristic_t *characteristic, uint8_t value, bool notify = false) {
+    characteristic->value.uint8_value = value;
+    if (notify) {
+        homekit_characteristic_notify(characteristic, characteristic->value);
+    }
+}
+
+void _set_characteristic_float(homekit_characteristic_t *characteristic, float value, bool notify = false) {
+    characteristic->value.float_value = value;
+    if (notify) {
+        homekit_characteristic_notify(characteristic, characteristic->value);
+    }
+}
+
+
 // --- Settings changes
 void updateThermostatSettings(heatpumpSettings settings) {
     uint8_t state = HOMEKIT_TARGET_HEATING_COOLING_STATE_OFF;
@@ -42,15 +57,8 @@ void updateThermostatSettings(heatpumpSettings settings) {
         state = HOMEKIT_TARGET_HEATING_COOLING_STATE_OFF;
     }
 
-    ch_thermostat_target_heating_cooling_state.value.uint8_value = state;
-    homekit_characteristic_notify(
-            &ch_thermostat_target_heating_cooling_state,
-            ch_thermostat_target_heating_cooling_state.value);
-
-    ch_thermostat_target_temperature.value.float_value = settings.temperature;
-    homekit_characteristic_notify(
-            &ch_thermostat_target_temperature,
-            ch_thermostat_target_temperature.value);
+    _set_characteristic_uint8(&ch_thermostat_target_heating_cooling_state, state, true);
+    _set_characteristic_float(&ch_thermostat_target_temperature, settings.temperature, true);
 
     MIE_LOG(" ⮕ HK thermostat mode %d temp %.1f",
             ch_thermostat_target_heating_cooling_state.value.uint8_value,
@@ -72,22 +80,18 @@ void updateFanSettings(heatpumpSettings settings) {
         speed = 1 + strtol(settings.fan, NULL, 10);
     }
 
-    ch_fan_active.value.uint8_value = (heatpump.getPowerSettingBool() ? 1 : 0);
-    homekit_characteristic_notify(&ch_fan_active, ch_fan_active.value);
+    _set_characteristic_uint8(&ch_fan_active, (heatpump.getPowerSettingBool() ? 1 : 0), true);
 
-    ch_fan_rotation_speed.value.float_value = (float)speed;
-    homekit_characteristic_notify(&ch_fan_rotation_speed, ch_fan_rotation_speed.value);
+    _set_characteristic_float(&ch_fan_rotation_speed, (float)speed, true);
 
-    ch_fan_target_state.value.uint8_value = targetState;
-    homekit_characteristic_notify(&ch_fan_target_state, ch_fan_target_state.value);
+    _set_characteristic_uint8(&ch_fan_target_state, targetState, true);
 
     // vertical swing
     if (strncmp(settings.vane, "SWING", 5) == 0) {
-        ch_fan_swing_mode.value.uint8_value = 1;
+        _set_characteristic_uint8(&ch_fan_swing_mode, 1, true);
     } else {
-        ch_fan_swing_mode.value.uint8_value = 0;
+        _set_characteristic_uint8(&ch_fan_swing_mode, 0, true);
     }
-    homekit_characteristic_notify(&ch_fan_swing_mode, ch_fan_swing_mode.value);
 
     MIE_LOG(" ⮕ HK fan active %d speed %d auto %d swing %d",
             ch_fan_active.value.uint8_value,
@@ -97,21 +101,18 @@ void updateFanSettings(heatpumpSettings settings) {
 }
 
 void updateDehumidifierSettings(heatpumpSettings settings) {
-    bool active = false;
+    uint8_t active = 0;
     if (strncmp(settings.mode, "DRY", 3) == 0) {
-        active = heatpump.getPowerSettingBool();
+        active = heatpump.getPowerSettingBool() ? 1 : 0;
     }
-
-    ch_dehumidifier_active.value.uint8_value = active ? 1 : 0;
-    homekit_characteristic_notify(&ch_dehumidifier_active, ch_dehumidifier_active.value);
+    _set_characteristic_uint8(&ch_dehumidifier_active, active);
 
     // horizontal swing
     if (strncmp(settings.wideVane, "SWING", 5) == 0) {
-        ch_dehumidifier_swing_mode.value.uint8_value = 1;
+        _set_characteristic_uint8(&ch_dehumidifier_swing_mode, 1, true);
     } else {
-        ch_dehumidifier_swing_mode.value.uint8_value = 0;
+        _set_characteristic_uint8(&ch_dehumidifier_swing_mode, 0, true);
     }
-    homekit_characteristic_notify(&ch_dehumidifier_swing_mode, ch_dehumidifier_swing_mode.value);
 
     MIE_LOG(" ⮕ HK dehumidifier active %d swing %d",
             ch_dehumidifier_active.value.uint8_value,
@@ -121,29 +122,26 @@ void updateDehumidifierSettings(heatpumpSettings settings) {
 
 // --- Status updates
 void updateThermostatOperatingStatus(bool operating) {
-    uint8_t target_heating_cooling_state = ch_thermostat_target_heating_cooling_state.value.uint8_value;
+    uint8_t target_state = ch_thermostat_target_heating_cooling_state.value.uint8_value;
     float target_temperature = ch_thermostat_target_temperature.value.float_value;
     float current_temperature = ch_thermostat_current_temperature.value.float_value;
 
-    uint8_t current_heating_cooling_state = HOMEKIT_CURRENT_HEATING_COOLING_STATE_OFF;
+    uint8_t current_state = HOMEKIT_CURRENT_HEATING_COOLING_STATE_OFF;
     if (heatpump.getPowerSettingBool() && operating) {
-        if (target_heating_cooling_state == HOMEKIT_TARGET_HEATING_COOLING_STATE_HEAT) {
-            current_heating_cooling_state = HOMEKIT_CURRENT_HEATING_COOLING_STATE_HEAT;
-        } else if (target_heating_cooling_state == HOMEKIT_TARGET_HEATING_COOLING_STATE_COOL) {
-            current_heating_cooling_state = HOMEKIT_CURRENT_HEATING_COOLING_STATE_COOL;
-        } else if (target_heating_cooling_state == HOMEKIT_TARGET_HEATING_COOLING_STATE_AUTO) {
+        if (target_state == HOMEKIT_TARGET_HEATING_COOLING_STATE_HEAT) {
+            current_state = HOMEKIT_CURRENT_HEATING_COOLING_STATE_HEAT;
+        } else if (target_state == HOMEKIT_TARGET_HEATING_COOLING_STATE_COOL) {
+            current_state = HOMEKIT_CURRENT_HEATING_COOLING_STATE_COOL;
+        } else if (target_state == HOMEKIT_TARGET_HEATING_COOLING_STATE_AUTO) {
             if (current_temperature < target_temperature) {
-                current_heating_cooling_state = HOMEKIT_CURRENT_HEATING_COOLING_STATE_HEAT;
+                current_state = HOMEKIT_CURRENT_HEATING_COOLING_STATE_HEAT;
             } else if (current_temperature > target_temperature) {
-                current_heating_cooling_state = HOMEKIT_CURRENT_HEATING_COOLING_STATE_COOL;
+                current_state = HOMEKIT_CURRENT_HEATING_COOLING_STATE_COOL;
             }
         }
     }
 
-    ch_thermostat_current_heating_cooling_state.value.uint8_value = current_heating_cooling_state;
-    homekit_characteristic_notify(
-            &ch_thermostat_current_heating_cooling_state,
-            ch_thermostat_current_heating_cooling_state.value);
+    _set_characteristic_uint8(&ch_thermostat_current_heating_cooling_state, current_state, true);
 
     MIE_LOG(" ⮕ HK thermostat mode %d temp %.1f",
             ch_thermostat_current_heating_cooling_state.value.uint8_value,
@@ -151,29 +149,29 @@ void updateThermostatOperatingStatus(bool operating) {
 }
 
 void updateFanOperatingStatus(bool operating) {
-    if (operating) {
-        ch_fan_current_state.value.uint8_value = FAN_CURRENT_STATE_BLOWING;
+    if (heatpump.getPowerSettingBool() == false) {
+        _set_characteristic_uint8(&ch_fan_current_state, FAN_CURRENT_STATE_INACTIVE, true);
+    } else if (operating) {
+        _set_characteristic_uint8(&ch_fan_current_state, FAN_CURRENT_STATE_BLOWING, true);
     } else {
-        ch_fan_current_state.value.uint8_value = FAN_CURRENT_STATE_IDLE;
+        _set_characteristic_uint8(&ch_fan_current_state, FAN_CURRENT_STATE_IDLE, true);
     }
-
-    homekit_characteristic_notify(&ch_fan_current_state, ch_fan_current_state.value);
 
     MIE_LOG(" ⮕ HK fan state %d", ch_fan_current_state.value.uint8_value);
 }
 
 void updateDehumidifierOperatingStatus(bool operating) {
     if (strncmp(heatpump.getModeSetting(), "DRY", 3) == 0) {
-        if (operating) {
-            ch_dehumidifier_current_state.value = HOMEKIT_UINT8_CPP(DEHUMIDIFIER_CURRENT_STATE_DEHUMIDIFYING);
+        if (heatpump.getPowerSettingBool() == false) {
+            _set_characteristic_uint8(&ch_dehumidifier_current_state, DEHUMIDIFIER_INACTIVE);
+        } else if (operating) {
+            _set_characteristic_uint8(&ch_dehumidifier_current_state, DEHUMIDIFIER_DEHUMIDIFYING);
         } else {
-            ch_dehumidifier_current_state.value = HOMEKIT_UINT8_CPP(DEHUMIDIFIER_CURRENT_STATE_IDLE);
+            _set_characteristic_uint8(&ch_dehumidifier_current_state, DEHUMIDIFIER_IDLE);
         }
     } else {
-        ch_dehumidifier_current_state.value = HOMEKIT_UINT8_CPP(DEHUMIDIFIER_CURRENT_STATE_INACTIVE);
+        _set_characteristic_uint8(&ch_dehumidifier_current_state, DEHUMIDIFIER_INACTIVE);
     }
-
-    homekit_characteristic_notify(&ch_dehumidifier_current_state, ch_dehumidifier_current_state.value);
 
     MIE_LOG(" ⮕ HK dehumidifier state %d", ch_dehumidifier_current_state.value.uint8_value);
 }
@@ -202,10 +200,7 @@ void settingsChanged() {
 void statusChanged(heatpumpStatus status) {
     MIE_LOG("⬅ HP room temp: %.1f; operating: %d", status.roomTemperature, status.operating);
 
-    ch_thermostat_current_temperature.value.float_value = status.roomTemperature;
-    homekit_characteristic_notify(
-            &ch_thermostat_current_temperature,
-            ch_thermostat_current_temperature.value);
+    _set_characteristic_float(&ch_thermostat_current_temperature, status.roomTemperature);
 
     updateThermostatOperatingStatus(status.operating);
     updateFanOperatingStatus(status.operating);
@@ -216,7 +211,7 @@ void statusChanged(heatpumpStatus status) {
 // --- HomeKit controls
 void set_target_heating_cooling_state(homekit_value_t value) {
     uint8_t targetState = value.uint8_value;
-    ch_thermostat_target_heating_cooling_state.value.uint8_value = targetState;
+    _set_characteristic_uint8(&ch_thermostat_target_heating_cooling_state, targetState);
     MIE_LOG("⬅ HK target state %d", targetState);
 
     switch (targetState) {
@@ -242,7 +237,7 @@ void set_target_heating_cooling_state(homekit_value_t value) {
 
 void set_target_temperature(homekit_value_t value) {
     float targetTemperature = value.float_value;
-    ch_thermostat_target_temperature.value.float_value = targetTemperature;
+    _set_characteristic_float(&ch_thermostat_target_temperature, targetTemperature);
     MIE_LOG("⬅ HK target temperature %.1f", targetTemperature);
 
     heatpump.setTemperature(targetTemperature);
@@ -253,7 +248,7 @@ void set_target_temperature(homekit_value_t value) {
 
 void set_dehumidifier_active(homekit_value_t value) {
     uint8_t active = value.uint8_value;
-    ch_dehumidifier_active.value.uint8_value = active;
+    _set_characteristic_uint8(&ch_dehumidifier_active, active);
     MIE_LOG("⬅ HK dehumidifier active %d", active);
 
     if (active == 1) {
@@ -269,7 +264,7 @@ void set_dehumidifier_active(homekit_value_t value) {
 
 void set_swing_horizontal(homekit_value_t value) {
     uint8_t swing = value.uint8_value;
-    ch_dehumidifier_swing_mode.value.uint8_value = swing;
+    _set_characteristic_uint8(&ch_dehumidifier_swing_mode, swing);
     MIE_LOG("⬅ HK hor swing %d", swing);
 
     // dehumidifier controls horizontal swing
@@ -286,7 +281,7 @@ void set_swing_horizontal(homekit_value_t value) {
 
 void set_fan_active(homekit_value_t value) {
     uint8_t active = value.uint8_value;
-    ch_fan_active.value.uint8_value = active;
+    _set_characteristic_uint8(&ch_fan_active, active);
     MIE_LOG("⬅ HK fan active %d", active);
 
     if (heatpump.getPowerSettingBool() == false && active == 1) {
@@ -315,7 +310,7 @@ void _setHeatPumpFanSpeed(int speed) {
 
 void set_fan_speed(homekit_value_t value) {
     float speed = value.float_value;
-    ch_fan_rotation_speed.value.float_value = speed;
+    _set_characteristic_float(&ch_fan_rotation_speed, speed);
     MIE_LOG("⬅ HK fan speed %d", (int)speed);
 
     _setHeatPumpFanSpeed(speed);
@@ -325,7 +320,7 @@ void set_fan_speed(homekit_value_t value) {
 
 void set_fan_auto_mode(homekit_value_t value) {
     uint8_t mode = value.uint8_value;
-    ch_fan_target_state.value.uint8_value = mode;
+    _set_characteristic_uint8(&ch_fan_target_state, mode);
     MIE_LOG("⬅ HK fan auto %d", mode);
 
     if (mode == 1) {
@@ -341,7 +336,7 @@ void set_fan_auto_mode(homekit_value_t value) {
 
 void set_fan_swing(homekit_value_t value) {
     uint8_t swing = value.uint8_value;
-    ch_fan_swing_mode.value.uint8_value = swing;
+    _set_characteristic_uint8(&ch_fan_swing_mode, swing);
     MIE_LOG("⬅ HK ver swing %d", swing);
 
     // fan controls vertical swing
