@@ -9,7 +9,12 @@
 HeatPump heatpump;
 Ticker ticker;
 
+// audo mode doesn't report the fan speed, we set a default to have a
+// consistent value so HomeKit can properly detect when scenes are active
+#define AUTO_FAN_SPEED 1
 
+// throttle updates to the heat pump to try to send more settings at once and
+// avoid conflicts when changing multiple settings from HomeKit
 #define UPDATE_INTERVAL 5
 void scheduleHeatPumpUpdate() {
     ticker.once_scheduled(UPDATE_INTERVAL, [] {
@@ -73,9 +78,7 @@ void updateFanSettings(heatpumpSettings settings) {
         speed = 1;
     } else if (strncmp(settings.fan, "AUTO", 4) == 0) {
         targetState = FAN_TARGET_STATE_AUTO;
-        if (speed == 0) {
-            speed = 2;
-        }
+        speed = AUTO_FAN_SPEED;
     } else {
         speed = 1 + strtol(settings.fan, NULL, 10);
     }
@@ -313,9 +316,13 @@ void set_fan_speed(homekit_value_t value) {
     _set_characteristic_float(&ch_fan_rotation_speed, speed);
     MIE_LOG("⬅ HK fan speed %d", (int)speed);
 
-    _setHeatPumpFanSpeed(speed);
-
-    scheduleHeatPumpUpdate();
+    uint8_t mode = ch_fan_target_state.value.uint8_value;
+    if (mode == 0) {
+        _setHeatPumpFanSpeed(speed);
+        scheduleHeatPumpUpdate();
+    } else {
+        MIE_LOG("Fan is in auto mode, ignoring speed change");
+    }
 }
 
 void set_fan_auto_mode(homekit_value_t value) {
@@ -326,6 +333,7 @@ void set_fan_auto_mode(homekit_value_t value) {
     if (mode == 1) {
         heatpump.setFanSpeed("AUTO");
         MIE_LOG(" ⮕ HP fan speed auto");
+        _set_characteristic_float(&ch_fan_rotation_speed, AUTO_FAN_SPEED);
     } else {
         int speed = (int)ch_fan_rotation_speed.value.float_value;
         _setHeatPumpFanSpeed(max(1, speed));
