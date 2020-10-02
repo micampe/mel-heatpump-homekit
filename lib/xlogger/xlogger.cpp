@@ -5,6 +5,7 @@
 char pf_buffer[PRINTF_BUFFER_LENGTH];
 char lineBuffer[LINE_BUFFER_LENGTH] = {0};
 int lineBufferLen = 0;
+time_t lastBootTime;
 
 const char *strLogLevel[llLast] = {
   "n/a",
@@ -27,6 +28,7 @@ xLogger::xLogger() {
 
 void xLogger::begin(const char _hostName[], Stream *_serial, bool _serialEnabled, const char _passwd[]) {
   initNtp();
+  lastBootTime = now();
   hostName = String(_hostName);
   telnetServer.begin();
   telnetServer.setNoDelay(true);
@@ -108,7 +110,14 @@ bool xLogger::ExecCommand(const String &cmd) {
   }
 
   if (cmd == "mem") {
-    println(SF("Free Heap RAM: ") + String(ESP.getFreeHeap()));
+    println(SF("Free Heap: ") + String(ESP.getFreeHeap()));
+    return true;
+  }
+
+  if (cmd == "uptime") {
+    String str;
+    eTimeToStr(str, now() - lastBootTime);
+    println(str);
     return true;
   }
 
@@ -247,19 +256,25 @@ void xLogger::showInitMessage() {
 
   if (programVersion && strnlen(programVersion, 1))
     msg += SF("Program version: ") + String(programVersion);
-  msg += SF(" Logger version: ") + String(XLOGGER_VERSION) + SF(".") + STR_RN;
-  msg += SF("Host name: ") + hostName + SF(" IP:") + WiFi.localIP().toString() + SF(" Mac address:") + WiFi.macAddress() + STR_RN;
-  msg += SF("Free Heap RAM: ") + String(ESP.getFreeHeap()) + STR_RN + STR_RN;
+  msg += SF("\nHost: ") + hostName;
+  msg += SF("\nIP  : ") + WiFi.localIP().toString();
+  msg += SF("\nMac : ") + WiFi.macAddress();
+  msg += SF("\nHeap: ") + String(ESP.getFreeHeap());
+  String time;
+  utcTimeToStr(time, now());
+  msg += SF("\nTime: ") + time + STR_RN + STR_RN;
 
-  msg += SF("Command serial [enable|disable|?] write log to serial debug port.") + STR_RN;
-  msg += SF("Serial: ") + (serialEnabled ? SF("enable") : SF("disable")) + STR_RN;
-  msg += SF("Command showdebuglvl [enable|disable|?] shows debug level in log lines.")+ STR_RN;
-  msg += SF("Show debug level: ") + (showDebugLevel ? SF("enable") : SF("disable")) + STR_RN;
-  msg += SF("Command loglvl [info|warning|error|?] filters messages by log level.") + STR_RN;
-  msg += SF("Log level: ") + String(strLogLevel[filterLogLevel]) + STR_RN;
-  msg += SF("Command time [none|str|ms|btw|?] shows time in log lines.") + STR_RN;
-  msg += SF("Time format: ") + String(strLogTimeFormat[logTimeFormat]) + STR_RN;
-  msg += SF("Command mem shows free heap memory.") + STR_RN;
+  msg += SF("Commands:\n");
+  msg += SF("serial [enable|disable] write log to serial debug port. [");
+  msg += (serialEnabled ? SF("enabled]\n") : SF("disabled]\n"));
+  msg += SF("showdebuglvl [enable|disable] shows debug level in log lines. [");
+  msg += (showDebugLevel ? SF("enabled]\n") : SF("disabled]\n"));
+  msg += SF("loglvl [info|warning|error] filters messages by log level. [");
+  msg += String(strLogLevel[filterLogLevel]) + SF("]\n");
+  msg += SF("time [none|str|ms|btw|utc] shows time in log lines. [");
+  msg += String(strLogTimeFormat[logTimeFormat]) + SF("]\n");
+  msg += SF("mem print free heap.\n");
+  msg += SF("uptime print module uptime.\n");
   if (commandDescription && _cmdCallback)
     msg += String(commandDescription) + STR_RN;
   msg += STR_RN;
@@ -353,7 +368,7 @@ void xLogger::addLogToBuffer(LogHeader &header, const char *buffer) {
 }
 
 void xLogger::showLog() {
-  telnetClient.println(SF("\r\n\r\n******** Cached log."));
+  telnetClient.println(SF("*** Cached log:"));
 
   int ptr = 0;
   String str;
@@ -370,7 +385,7 @@ void xLogger::showLog() {
     
     ptr += sizeof(LogHeader) + header.logSize + 1;
   }
-  telnetClient.println(SF("********"));
+  telnetClient.println(SF("***"));
 }
 
 void xLogger::formatLogMessage(String &str, const char *buffer, size_t size, LogHeader *header) {

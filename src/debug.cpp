@@ -2,7 +2,7 @@
 
 xLogger Debug;
 
-const char* commandsDesc = "Command restart restarts ESP.";
+const char* commandsDesc = "restart restarts ESP.";
 
 bool handleCommands(String &cmd) {
     if (cmd == "restart") {
