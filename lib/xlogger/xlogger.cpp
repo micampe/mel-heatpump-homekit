@@ -1,5 +1,7 @@
 #include "xlogger.h"
 
+#include "ntp.h"
+
 char pf_buffer[PRINTF_BUFFER_LENGTH];
 char lineBuffer[LINE_BUFFER_LENGTH] = {0};
 int lineBufferLen = 0;
@@ -15,7 +17,8 @@ const char *strLogTimeFormat[ltLast] = {
   "none",
   "time from start",
   "milliseconds from start",
-  "milliseconds from previous log entry"
+  "milliseconds from previous log entry",
+  "utc"
 };
 
 xLogger::xLogger() {
@@ -23,6 +26,7 @@ xLogger::xLogger() {
 }
 
 void xLogger::begin(const char _hostName[], Stream *_serial, bool _serialEnabled, const char _passwd[]) {
+  initNtp();
   hostName = String(_hostName);
   telnetServer.begin();
   telnetServer.setNoDelay(true);
@@ -167,6 +171,10 @@ bool xLogger::ExecCommand(const String &cmd) {
     logTimeFormat = ltMsBetween;
     return true;
   }
+  if (cmd == "time utc") {
+    logTimeFormat = ltUTCTime;
+    return true;
+  }
   if (cmd == "time ?") {
     println("Time format: " + String(strLogTimeFormat[logTimeFormat]));
     return true;
@@ -255,7 +263,7 @@ void xLogger::showInitMessage() {
   if (commandDescription && _cmdCallback)
     msg += String(commandDescription) + STR_RN;
   msg += STR_RN;
-  
+
   if (!telnetAuthenticated && strnlen(passwd, 1))
     msg += SF("Please, enter password before entering commands. Password length may be up to 10 symbols.") + STR_RN;
 
@@ -384,6 +392,14 @@ void xLogger::formatLogMessage(String &str, const char *buffer, size_t size, Log
         str += SF(" ");
         oldMillis = header->logTime;
         break;
+      case ltUTCTime:
+        if (timeStatus() != timeNotSet) {
+          utcTimeToStr(str, lastBootTime + header->logTime / 1000);
+          str += SF(" ");
+        } else {
+          str = "[NTP sync error] ";
+        }
+        break;
       case ltNone:
       case ltLast:
         break;
@@ -476,4 +492,36 @@ void eTimeToStr(String &str, long val, bool fullPrint){
   str += String(seconds) + "s";
 }
 
-
+void utcTimeToStr(String &str, time_t time) {
+  str = String(year(time)) + "-";
+  int _month = month(time);
+  if (_month < 10) {
+    str += "0" + String(_month) + "-";
+  } else {
+    str += String(_month) + "-";
+  }
+  int _day = day(time);
+  if (_day < 10) {
+    str += "0" + String(_day) + " ";
+  } else {
+    str += String(_day) + " ";
+  }
+  int _hour = hour(time);
+  if (_hour < 10) {
+    str += "0" + String(_hour) + ":";
+  } else {
+    str += String(_hour) + ":";
+  }
+  int _minute = minute(time);
+  if (_minute < 10) {
+    str += "0" + String(_minute) + ":";
+  } else {
+    str += String(_minute) + ":";
+  }
+  int _second = second(time);
+  if (_second < 10) {
+    str += "0" + String(_second);
+  } else {
+    str += String(_second);
+  }
+}

@@ -28,6 +28,7 @@ extern char pf_buffer[PRINTF_BUFFER_LENGTH];
 #define STR_RN SF("\r\n")
 // time conversion
 void eTimeToStr(String &str, long val, bool fullPrint = false);
+void utcTimeToStr(String &str, time_t time);
 
 typedef bool (*logCallback)(String &cmd);
 
@@ -46,6 +47,7 @@ enum LogTimeFormat: uint8_t {
   ltStrTime,
   ltMsTime,
   ltMsBetween,
+  ltUTCTime,
 
   ltLast
 };
