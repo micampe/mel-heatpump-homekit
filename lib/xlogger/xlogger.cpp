@@ -256,25 +256,25 @@ void xLogger::showInitMessage() {
 
   if (programVersion && strnlen(programVersion, 1))
     msg += SF("Program version: ") + String(programVersion);
-  msg += SF("\nHost: ") + hostName;
-  msg += SF("\nIP  : ") + WiFi.localIP().toString();
-  msg += SF("\nMac : ") + WiFi.macAddress();
-  msg += SF("\nHeap: ") + String(ESP.getFreeHeap());
+  msg += SF("\r\nHost: ") + hostName;
+  msg += SF("\r\nIP  : ") + WiFi.localIP().toString();
+  msg += SF("\r\nMac : ") + WiFi.macAddress();
+  msg += SF("\r\nHeap: ") + String(ESP.getFreeHeap());
   String time;
   utcTimeToStr(time, now());
-  msg += SF("\nTime: ") + time + STR_RN + STR_RN;
+  msg += SF("\r\nTime: ") + time;
 
-  msg += SF("Commands:\n");
+  msg += SF("\r\n\r\nCommands:\r\n");
   msg += SF("serial [enable|disable] write log to serial debug port. [");
-  msg += (serialEnabled ? SF("enabled]\n") : SF("disabled]\n"));
+  msg += (serialEnabled ? SF("enabled]\r\n") : SF("disabled]\r\n"));
   msg += SF("showdebuglvl [enable|disable] shows debug level in log lines. [");
-  msg += (showDebugLevel ? SF("enabled]\n") : SF("disabled]\n"));
+  msg += (showDebugLevel ? SF("enabled]\r\n") : SF("disabled]\r\n"));
   msg += SF("loglvl [info|warning|error] filters messages by log level. [");
-  msg += String(strLogLevel[filterLogLevel]) + SF("]\n");
+  msg += String(strLogLevel[filterLogLevel]) + SF("]\r\n");
   msg += SF("time [none|str|ms|btw|utc] shows time in log lines. [");
-  msg += String(strLogTimeFormat[logTimeFormat]) + SF("]\n");
-  msg += SF("mem print free heap.\n");
-  msg += SF("uptime print module uptime.\n");
+  msg += String(strLogTimeFormat[logTimeFormat]) + SF("]\r\n");
+  msg += SF("mem print free heap.\r\n");
+  msg += SF("uptime print module uptime.\r\n");
   if (commandDescription && _cmdCallback)
     msg += String(commandDescription) + STR_RN;
   msg += STR_RN;
