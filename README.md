@@ -10,12 +10,12 @@ Notes:
 - if you plan to use a Wemos D1 mini board, you should **use version 1** (the one with the metal FCC shield). v3 appears to have a different serial configuration that requires a hardware modification to work, v1 can be wired directly with only a connector.
 
 ## Setup
-After flashing the firmware the ESP8266 will create a WiFi netwoek named `MIE Heat Pump XXXXXX`, connect to it and set up your WiFi name and password.
+After flashing the firmware the ESP8266 will create a WiFi network named `MIE Heat Pump XXXXXX`, connect to it and set up your WiFi name and password.
 
 After setting up the WiFi the LED on the module will briefly blink at 3Hz and then at 1Hz. Now the module is ready for pairing and you can use the Home app to add the accessory (password `111-11-111`).
 
 ## Usage
-The heat pump will appear in Home as three accessory grouped together: a thermostat, a dehumidifier, and a fan and the three will coordinate to show the current status of the heat pump.
+The heat pump will appear in Home as three accessories grouped together: a thermostat, a dehumidifier, and a fan and the three will coordinate to show the current status of the heat pump.
 
 For example if the heat pump is in “cooling” mode, the thermostat will show cool, the fan will be running at the speed you set and the dehumidifier will be off.
 
