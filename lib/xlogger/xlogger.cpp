@@ -1,7 +1,5 @@
 #include "xlogger.h"
 
-#include "ntp.h"
-
 char pf_buffer[PRINTF_BUFFER_LENGTH];
 char lineBuffer[LINE_BUFFER_LENGTH] = {0};
 int lineBufferLen = 0;
@@ -27,7 +25,6 @@ xLogger::xLogger() {
 }
 
 void xLogger::begin(const char _hostName[], Stream *_serial, bool _serialEnabled, const char _passwd[]) {
-  initNtp();
   lastBootTime = now();
   hostName = String(_hostName);
   telnetServer.begin();
