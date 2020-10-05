@@ -242,22 +242,32 @@ void set_target_heating_cooling_state(homekit_value_t value) {
     switch (targetState) {
         // AUTO is not supported
         case HOMEKIT_TARGET_HEATING_COOLING_STATE_COOL:
-            heatpump.setPowerSetting(true);
-            heatpump.setModeSetting("COOL");
-            MIE_LOG(" ⮕ HP mode cool");
+            if (heatpump.getPowerSettingBool() == false || 
+                    strncmp(heatpump.getModeSetting(), "COOL", 4) != 0) {
+                heatpump.setPowerSetting(true);
+                heatpump.setModeSetting("COOL");
+                MIE_LOG(" ⮕ HP mode cool");
+                scheduleHeatPumpUpdate();
+            }
             break;
         case HOMEKIT_TARGET_HEATING_COOLING_STATE_HEAT:
-            heatpump.setPowerSetting(true);
-            heatpump.setModeSetting("HEAT");
-            MIE_LOG(" ⮕ HP mode heat");
+            if (heatpump.getPowerSettingBool() == false || 
+                    strncmp(heatpump.getModeSetting(), "HEAT", 4) != 0) {
+                heatpump.setPowerSetting(true);
+                heatpump.setModeSetting("HEAT");
+                MIE_LOG(" ⮕ HP mode heat");
+
+                scheduleHeatPumpUpdate();
+            }
             break;
         case HOMEKIT_TARGET_HEATING_COOLING_STATE_OFF:
-            heatpump.setPowerSetting(false);
-            MIE_LOG(" ⮕ HP thermostat off");
+            if (heatpump.getPowerSettingBool() == true) {
+                heatpump.setPowerSetting(false);
+                MIE_LOG(" ⮕ HP thermostat off");
+                scheduleHeatPumpUpdate();
+            }
             break;
     }
-
-    scheduleHeatPumpUpdate();
 }
 
 void set_target_temperature(homekit_value_t value) {
