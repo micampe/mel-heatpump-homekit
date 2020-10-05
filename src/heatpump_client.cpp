@@ -7,7 +7,7 @@
 #include "heatpump_client.h"
 
 HeatPump heatpump;
-Ticker ticker;
+Ticker updateTicker;
 Ticker syncTicker;
 
 // audo mode doesn't report the fan speed, we set a default to have a
@@ -18,8 +18,11 @@ Ticker syncTicker;
 // avoid conflicts when changing multiple settings from HomeKit
 #define UPDATE_INTERVAL 5
 void scheduleHeatPumpUpdate() {
-    ticker.once_scheduled(UPDATE_INTERVAL, [] {
+    updateTicker.once_scheduled(UPDATE_INTERVAL, [] {
+        unsigned long start = millis();
+        MIE_LOG("HP Updating...");
         heatpump.update();
+        MIE_LOG("HP Update %dms", millis() -start);
     });
 }
 
@@ -217,7 +220,10 @@ void settingsChanged() {
 }
 
 void statusChanged(heatpumpStatus status) {
-    MIE_LOG("⬅ HP room temp: %.1f; operating: %d", status.roomTemperature, status.operating);
+    MIE_LOG("⬅ HP room temp: %.1f; operating: %d, compressor: %d",
+            status.roomTemperature,
+            status.operating,
+            status.compressorFrequency);
 
     _set_characteristic_float(&ch_thermostat_current_temperature, status.roomTemperature);
 
