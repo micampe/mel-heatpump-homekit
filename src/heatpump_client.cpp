@@ -8,6 +8,7 @@
 
 HeatPump heatpump;
 Ticker ticker;
+Ticker syncTicker;
 
 // audo mode doesn't report the fan speed, we set a default to have a
 // consistent value so HomeKit can properly detect when scenes are active
@@ -21,13 +22,6 @@ void scheduleHeatPumpUpdate() {
         heatpump.update();
     });
 }
-
-void syncHeatPump() {
-    if (heatpump.isConnected()) {
-        heatpump.sync();
-    }
-}
-
 
 bool _set_characteristic_uint8(homekit_characteristic_t *characteristic, uint8_t value, bool notify = false) {
     if (characteristic->value.uint8_value != value) {
@@ -398,6 +392,15 @@ bool setupHeatPump() {
 
     heatpump.enableExternalUpdate();
     heatpump.disableAutoUpdate();
+
+    syncTicker.attach_ms_scheduled(500, [] {
+        unsigned long start = millis();
+        heatpump.sync();
+        int diff = millis() - start;
+        if (diff > 150) {
+            MIE_LOG("HP Sync %dms", diff);
+        }
+    });
 
     return heatpump.connect(&Serial);
 }
