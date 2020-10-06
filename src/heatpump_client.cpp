@@ -10,6 +10,9 @@ HeatPump heatpump;
 Ticker updateTicker;
 Ticker syncTicker;
 
+#define HK_SPEED(s) ((float)s * 20)
+#define HP_SPEED(s) ((int)s / 20)
+
 // audo mode doesn't report the fan speed, we set a default to have a
 // consistent value so HomeKit can properly detect when scenes are active
 #define AUTO_FAN_SPEED 1
@@ -95,7 +98,7 @@ void updateFanSettings(heatpumpSettings settings) {
 
     bool changed = false;
     changed |= _set_characteristic_uint8(&ch_fan_active, (heatpump.getPowerSettingBool() ? 1 : 0), true);
-    changed |= _set_characteristic_float(&ch_fan_rotation_speed, (float)speed * 20, true);
+    changed |= _set_characteristic_float(&ch_fan_rotation_speed, HK_SPEED(speed), true);
     changed |= _set_characteristic_uint8(&ch_fan_target_state, targetState, true);
 
     // vertical swing
@@ -108,7 +111,7 @@ void updateFanSettings(heatpumpSettings settings) {
     if (changed) {
         MIE_LOG(" ⮕ HK fan active %d speed %d auto %d swing %d",
                 ch_fan_active.value.uint8_value,
-                (int)ch_fan_rotation_speed.value.float_value / 20,
+                (int)ch_fan_rotation_speed.value.float_value,
                 ch_fan_target_state.value.uint8_value,
                 ch_fan_swing_mode.value.uint8_value);
     }
@@ -360,18 +363,18 @@ void set_fan_speed(homekit_value_t value) {
     if (mode == 0 || heatpump.getPowerSettingBool() == false) {
         heatpump.setPowerSetting(true);
         _set_characteristic_float(&ch_fan_rotation_speed, speed);
-        _setHeatPumpFanSpeed(speed / 20);
+        _setHeatPumpFanSpeed(HP_SPEED(speed));
 
         if (mode == 1) {
             heatpump.setFanSpeed("AUTO");
             MIE_LOG(" ⮕ HP fan speed auto");
-            _set_characteristic_float(&ch_fan_rotation_speed, AUTO_FAN_SPEED * 20, true);
+            _set_characteristic_float(&ch_fan_rotation_speed, HK_SPEED(AUTO_FAN_SPEED), true);
         }
 
         scheduleHeatPumpUpdate();
     } else {
         MIE_LOG("Fan is in auto mode, ignoring speed change");
-        _set_characteristic_float(&ch_fan_rotation_speed, AUTO_FAN_SPEED * 20, true);
+        _set_characteristic_float(&ch_fan_rotation_speed, HK_SPEED(AUTO_FAN_SPEED), true);
     }
 }
 
@@ -383,7 +386,7 @@ void set_fan_auto_mode(homekit_value_t value) {
     if (mode == 1) {
         heatpump.setFanSpeed("AUTO");
         MIE_LOG(" ⮕ HP fan speed auto");
-        _set_characteristic_float(&ch_fan_rotation_speed, AUTO_FAN_SPEED * 20, true);
+        _set_characteristic_float(&ch_fan_rotation_speed, HK_SPEED(AUTO_FAN_SPEED), true);
     } else {
         _setHeatPumpFanSpeed(AUTO_FAN_SPEED);
     }
