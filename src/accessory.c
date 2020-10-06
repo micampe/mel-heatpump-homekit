@@ -130,8 +130,7 @@ homekit_characteristic_t ch_fan_rotation_speed = HOMEKIT_CHARACTERISTIC_(
         ROTATION_SPEED, 
         0,
         .setter = &set_placeholder,
-        .min_value = (float[]){0},
-        .max_value = (float[]){5});
+        .min_step = (float[]){20});
 
 homekit_characteristic_t ch_fan_swing_mode = HOMEKIT_CHARACTERISTIC_(
         SWING_MODE, 0,
