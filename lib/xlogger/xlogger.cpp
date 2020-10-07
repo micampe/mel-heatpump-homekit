@@ -257,9 +257,14 @@ void xLogger::showInitMessage() {
   msg += SF("\r\nIP  : ") + WiFi.localIP().toString();
   msg += SF("\r\nMac : ") + WiFi.macAddress();
   msg += SF("\r\nHeap: ") + String(ESP.getFreeHeap());
-  String time;
-  utcTimeToStr(time, now());
-  msg += SF("\r\nTime: ") + time;
+
+  String str;
+  utcTimeToStr(str, lastBootTime);
+  msg += SF("\r\nBoot  : ") + str;
+  utcTimeToStr(str, now());
+  msg += SF("\r\nTime  : ") + str;
+  eTimeToStr(str, now() - lastBootTime);
+  msg += SF("\r\nUptime: ") + str;
 
   msg += SF("\r\n\r\nCommands:\r\n");
   msg += SF("serial [enable|disable] write log to serial debug port. [");
@@ -492,6 +497,7 @@ void eTimeToStr(String &str, long val, bool fullPrint){
   int minutes = numberOfMinutes(val);
   int seconds = numberOfSeconds(val);
 
+  str = "";
   if (fullPrint || days) {
     str = String(days) + "d ";  
   }

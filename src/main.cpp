@@ -114,8 +114,8 @@ void setup() {
     // no mDNS, HomeKit will do that
     ArduinoOTA.begin(false);
 
-    Serial.println("Starting KomeKit server...");
-    MIE_LOG("Starting KomeKit server...");
+    Serial.println("Starting HomeKit server...");
+    MIE_LOG("Starting HomeKit server...");
     delay(500);
     homekit_setup(ssid);
     homekit = arduino_homekit_get_running_server();
