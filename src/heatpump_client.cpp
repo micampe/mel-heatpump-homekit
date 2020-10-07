@@ -436,10 +436,12 @@ bool setupHeatPump() {
 
     syncTicker.attach_ms_scheduled(500, [] {
         unsigned long start = millis();
-        heatpump.sync();
-        int diff = millis() - start;
-        if (diff > 150) {
-            MIE_LOG("HP sync %dms", diff);
+        if (heatpump.isConnected()) {
+            heatpump.sync();
+            int diff = millis() - start;
+            if (diff > 150) {
+                MIE_LOG("HP sync %dms", diff);
+            }
         }
     });
 
