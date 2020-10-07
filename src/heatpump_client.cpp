@@ -11,7 +11,7 @@ Ticker updateTicker;
 Ticker syncTicker;
 
 #define HK_SPEED(s) ((float)s * 20)
-#define HP_SPEED(s) ((int)s / 20)
+#define HP_SPEED(s) (s <= 20 ? "QUIET" : s <= 40 ? "1" : s <= 60 ? "2" : s <= 80 ? "3" : "4")
 
 // audo mode doesn't report the fan speed, we set a default to have a
 // consistent value so HomeKit can properly detect when scenes are active
@@ -20,10 +20,72 @@ Ticker syncTicker;
 // throttle updates to the heat pump to try to send more settings at once and
 // avoid conflicts when changing multiple settings from HomeKit
 #define UPDATE_INTERVAL 5
+
+heatpumpSettings _settingsForCurrentState() {
+    heatpumpSettings settings;
+
+    uint8_t therm_mode = ch_thermostat_target_heating_cooling_state.value.uint8_value;
+    uint8_t fan_active = ch_fan_active.value.uint8_value;
+    uint8_t dehum_active = ch_dehumidifier_active.value.uint8_value;
+
+    settings.temperature = ch_thermostat_target_temperature.value.float_value;
+
+    // I don't want to override, I want to keep what was there by default
+    settings.mode = "AUTO";
+
+    if (therm_mode == HOMEKIT_TARGET_HEATING_COOLING_STATE_OFF && !fan_active && !dehum_active) {
+        settings.power = "OFF";
+    } else {
+        settings.power = "ON";
+        if (therm_mode != HOMEKIT_TARGET_HEATING_COOLING_STATE_OFF) {
+            if (therm_mode == HOMEKIT_TARGET_HEATING_COOLING_STATE_HEAT) {
+                settings.mode = "HEAT";
+            } else if (therm_mode == HOMEKIT_TARGET_HEATING_COOLING_STATE_COOL) {
+                settings.mode = "COOL";
+            } else {
+                settings.mode = "AUTO";
+            }
+        } else if (dehum_active) {
+            settings.mode = "DRY";
+        } else if (fan_active) {
+            settings.mode = "FAN";
+        }
+    }
+
+    float speed = ch_fan_rotation_speed.value.float_value;
+    if (ch_fan_target_state.value.uint8_value == 1) {
+        settings.fan = "AUTO";
+    } else if (speed > 0) {
+        settings.fan = HP_SPEED(speed);
+    }
+
+    if (ch_fan_swing_mode.value.uint8_value == 1) {
+        settings.vane = "SWING";
+    } else {
+        settings.vane = "AUTO";
+    }
+
+    if (ch_dehumidifier_swing_mode.value.uint8_value == 1) {
+        settings.wideVane = "SWING";
+    } else {
+        settings.wideVane = "|";
+    }
+
+    return settings;
+}
+
 void scheduleHeatPumpUpdate() {
     updateTicker.once_scheduled(UPDATE_INTERVAL, [] {
         unsigned long start = millis();
-        MIE_LOG("HP updating");
+        heatpumpSettings settings = _settingsForCurrentState();
+        heatpump.setSettings(settings);
+        MIE_LOG("⮕ HP updating power %s mode %s target %.1f fan %s v vane %s h vane %s",
+                settings.power,
+                settings.mode,
+                settings.temperature,
+                settings.fan,
+                settings.vane,
+                settings.wideVane);
         heatpump.update();
         MIE_LOG("HP update %dms", millis() -start);
     });
