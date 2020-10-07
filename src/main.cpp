@@ -11,6 +11,7 @@
 #include "accessory.h"
 #include "debug.h"
 #include "heatpump_client.h"
+#include "humidity.h"
 
 #define NAME_PREFIX "MIE Heat Pump "
 
@@ -156,6 +157,8 @@ void setup() {
             Serial.println("Heat pump connection failed");
             MIE_LOG("Heat pump connection failed");
         }
+
+        initHumidityReporting();
     }
 
     timer.once(2, stopBlinker);

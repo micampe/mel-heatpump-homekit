@@ -20,6 +20,8 @@ extern homekit_characteristic_t ch_thermostat_target_heating_cooling_state;
 extern homekit_characteristic_t ch_dehumidifier_active;
 extern homekit_characteristic_t ch_dehumidifier_current_state;
 extern homekit_characteristic_t ch_dehumidifier_swing_mode;
+extern homekit_characteristic_t ch_dehumidifier_relative_humidity;
+extern homekit_characteristic_t ch_dew_point;
 
 // Fan
 

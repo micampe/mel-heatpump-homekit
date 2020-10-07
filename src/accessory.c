@@ -4,6 +4,7 @@
 #include <homekit/types.h>
 
 #include "accessory.h"
+#include "custom_characteristics.h"
 
 #define ACCESSORY_NAME  "Mitsubishi Air Conditioner"
 #define ACCESSORY_SN  GIT_HASH
@@ -135,6 +136,9 @@ homekit_characteristic_t ch_dehumidifier_target_state = HOMEKIT_CHARACTERISTIC_(
             .values = (uint8_t[]) { 2 } \
         });
 
+// Custom
+homekit_characteristic_t ch_dew_point = HOMEKIT_CHARACTERISTIC_(DEW_POINT, 0);
+
 homekit_service_t dehumidifier_service = HOMEKIT_SERVICE_(HUMIDIFIER_DEHUMIDIFIER,
     .characteristics = (homekit_characteristic_t *[]) {
         HOMEKIT_CHARACTERISTIC(NAME, "Dehumidifier"),
@@ -143,6 +147,7 @@ homekit_service_t dehumidifier_service = HOMEKIT_SERVICE_(HUMIDIFIER_DEHUMIDIFIE
         &ch_dehumidifier_current_state,
         &ch_dehumidifier_target_state,
         &ch_dehumidifier_swing_mode,
+        &ch_dew_point,
         NULL
     });
 
