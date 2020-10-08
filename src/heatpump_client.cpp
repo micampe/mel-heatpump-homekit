@@ -381,20 +381,21 @@ void set_fan_active(homekit_value_t value) {
 }
 
 void set_fan_speed(homekit_value_t value) {
-    float speed = value.float_value;
-    _set_characteristic_float(&ch_fan_rotation_speed, speed);
-    MIE_LOG("⬅ HK fan speed %d", (int)speed);
+    float speed = roundf(value.float_value);
+    if (_set_characteristic_float(&ch_fan_rotation_speed, speed)) {
+        MIE_LOG("⬅ HK fan speed %d", (int)speed);
 
-    bool active = ch_fan_active.value.uint8_value;
-    uint8_t mode = ch_fan_target_state.value.uint8_value;
-    if (active && mode == 1) {
-        MIE_LOG(" Fan is in auto mode, ignoring speed change");
-        _set_characteristic_float(&ch_fan_rotation_speed, HK_SPEED(AUTO_FAN_SPEED), true);
-    } else {
-        _set_characteristic_uint8(&ch_fan_target_state, 0, true);
+        bool active = ch_fan_active.value.uint8_value;
+        uint8_t mode = ch_fan_target_state.value.uint8_value;
+        if (active && mode == 1) {
+            MIE_LOG(" Fan is in auto mode, ignoring speed change");
+            _set_characteristic_float(&ch_fan_rotation_speed, HK_SPEED(AUTO_FAN_SPEED), true);
+        } else {
+            _set_characteristic_uint8(&ch_fan_target_state, 0, true);
+        }
+
+        scheduleHeatPumpUpdate();
     }
-
-    scheduleHeatPumpUpdate();
 }
 
 void set_fan_auto_mode(homekit_value_t value) {
