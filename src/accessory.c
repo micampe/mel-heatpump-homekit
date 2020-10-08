@@ -18,6 +18,33 @@ void accessory_identify(homekit_value_t _value) {
 // they will be overridden by the heat pump client
 void set_placeholder() {}
 
+// Helpers
+
+bool _set_characteristic_uint8(homekit_characteristic_t *characteristic, uint8_t value, bool notify) {
+    if (characteristic->value.uint8_value != value) {
+        characteristic->value.uint8_value = value;
+        if (notify) {
+            homekit_characteristic_notify(characteristic, characteristic->value);
+        }
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool _set_characteristic_float(homekit_characteristic_t *characteristic, float value, bool notify) {
+    if (characteristic->value.float_value != value) {
+        characteristic->value.float_value = value;
+        if (notify) {
+            homekit_characteristic_notify(characteristic, characteristic->value);
+        }
+        return true;
+    } else {
+        return false;
+    }
+}
+
+
 // Status LED
 
 #define LED_ON LOW

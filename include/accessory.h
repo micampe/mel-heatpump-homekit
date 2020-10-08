@@ -40,4 +40,16 @@ extern homekit_characteristic_t ch_fan_target_state;
 extern homekit_characteristic_t accessory_name;
 extern homekit_server_config_t accessory_config;
 
+// Helpers
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern bool _set_characteristic_uint8(homekit_characteristic_t *characteristic, uint8_t value, bool notify);
+extern bool _set_characteristic_float(homekit_characteristic_t *characteristic, float value, bool notify);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif
