@@ -393,7 +393,7 @@ void set_fan_swing(homekit_value_t value) {
     scheduleHeatPumpUpdate();
 }
 
-bool setupHeatPump() {
+bool initHeatPump() {
     ch_thermostat_target_heating_cooling_state.setter = set_target_heating_cooling_state;
     ch_thermostat_target_temperature.setter = set_target_temperature;
 
@@ -422,5 +422,14 @@ bool setupHeatPump() {
         }
     });
 
-    return heatpump.connect(&Serial);
+    if (heatpump.connect(&Serial)) {
+        MIE_LOG("Heat pump connected");
+        return true;
+    } else {
+        Serial.begin(115200);
+        Serial.println();
+        Serial.println("Heat pump connection failed");
+        MIE_LOG("Heat pump connection failed");
+        return false;
+    }
 }

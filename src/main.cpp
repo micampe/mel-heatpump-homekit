@@ -120,17 +120,10 @@ void setup() {
         blinker.attach(0.33, blink);
         Serial.println("Connecting to heat pump... no more serial logging");
         MIE_LOG("Connecting to heat pump...");
-        delay(200);
-        if (setupHeatPump()) {
+        if (initHeatPump()) {
             blinker.detach();
-            MIE_LOG("Heat pump connected");
         } else {
             blinker.attach(0.1, blink);
-
-            Serial.begin(115200);
-            Serial.println();
-            Serial.println("Heat pump connection failed");
-            MIE_LOG("Heat pump connection failed");
         }
 
         initHumidityReporting();

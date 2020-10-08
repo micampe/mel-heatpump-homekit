@@ -5,7 +5,6 @@
 
 extern HeatPump heatpump;
 
-extern bool setupHeatPump();
-extern void syncHeatPump();
+bool initHeatPump();
 
 #endif
