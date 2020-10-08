@@ -1,17 +1,15 @@
 #include <Arduino.h>
 #include <ArduinoOTA.h>
 #include <DoubleResetDetect.h>
-#include <HeatPump.h>
 #include <Ticker.h>
-#include <TZ.h>
 #include <WiFiManager.h>
 #include <arduino_homekit_server.h>
-#include <coredecls.h>
 
 #include "accessory.h"
 #include "debug.h"
 #include "heatpump_client.h"
 #include "humidity.h"
+#include "ntp_clock.h"
 
 #define NAME_PREFIX "MIE Heat Pump "
 
@@ -50,28 +48,6 @@ void homekit_setup(char *ssid) {
     arduino_homekit_setup(&accessory_config);
 }
 
-bool timeWasSet = false;
-
-void setClock() {
-    configTime(TZ_Etc_UTC, "pool.ntp.org");
-
-    settimeofday_cb([] {
-        timeWasSet = true;
-        MIE_LOG("NTP sync");
-    });
-    Serial.print("Waiting for NTP time sync...");
-    while (!timeWasSet) {
-        delay(500);
-        Serial.print(".");
-    }
-    Serial.println();
-    time_t now;
-    struct tm timeinfo;
-    gmtime_r(&now, &timeinfo);
-    Serial.print("Current time: ");
-    Serial.print(asctime(&timeinfo));
-}
-
 void setup() {
     Serial.begin(115200);
     Serial.println();
@@ -102,11 +78,10 @@ void setup() {
         }
     }
 
+    initNTPClock();
+
     Serial.println("Initializing remote debug...");
     blinker.attach(0.3, blink);
-    setClock();
-    // remote debugging uses TimeLib so sync it
-    setSyncProvider([] { return time(nullptr); });
     setupRemoteDebug(ssid);
     blinker.detach();
 
