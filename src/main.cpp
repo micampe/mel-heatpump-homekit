@@ -1,15 +1,16 @@
 #include <Arduino.h>
 #include <ArduinoOTA.h>
 #include <DoubleResetDetect.h>
-#include <Ticker.h>
 #include <WiFiManager.h>
 #include <arduino_homekit_server.h>
+#include <led_status.h>
 
 #include "accessory.h"
 #include "debug.h"
 #include "heatpump_client.h"
 #include "humidity.h"
 #include "ntp_clock.h"
+#include "led_status_patterns.h"
 
 #define NAME_PREFIX "MIE Heat Pump "
 
@@ -18,29 +19,18 @@
 DoubleResetDetect drd(DRD_TIMEOUT, DRD_ADDRESS);
 
 char ssid[25];
-Ticker blinker;
-Ticker timer;
 homekit_server_t *homekit;
 
-void blink() {
-    digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));    
-}
-
-void stopBlinker() {
-    blinker.detach();
-    digitalWrite(LED_BUILTIN, HIGH);
-}
-
 void wifiConnectionFailed() {
-    Serial.println("failed to connect and hit timeout");
-    delay(3000);
-    //reset and try again, or maybe put it to deep sleep
+    led_status_signal(&status_led_error);
+    Serial.println("WiFi connection failed, restarting");
+    delay(1000);
     ESP.reset();
-    delay(5000);
+    delay(3000);
 }
 
 void wifiConfigModeCallback(WiFiManager *wifiManager) {
-    blinker.attach(0.66, blink);
+    led_status_set(&status_led_waiting_wifi);
 }
 
 void homekit_setup(char *ssid) {
@@ -52,7 +42,7 @@ void setup() {
     Serial.begin(115200);
     Serial.println();
 
-    pinMode(LED_BUILTIN, OUTPUT);
+    led_status_init(LED_BUILTIN, false);
 
     sprintf(ssid, NAME_PREFIX "%06x", ESP.getChipId());
 
@@ -64,6 +54,7 @@ void setup() {
 
     if (drd.detect()) {
         Serial.println("Double reset detected");
+        led_status_signal(&status_led_double_reset);
 
         Serial.println("Clearing HomeKit config");
         homekit_storage_reset();
@@ -81,9 +72,7 @@ void setup() {
     initNTPClock();
 
     Serial.println("Initializing remote debug...");
-    blinker.attach(0.3, blink);
     setupRemoteDebug(ssid);
-    blinker.detach();
 
     Serial.println("Initializing OTA...");
     MIE_LOG("Initializing OTA...");
@@ -96,7 +85,7 @@ void setup() {
     homekit_setup(ssid);
     homekit = arduino_homekit_get_running_server();
     if (!homekit->paired) {
-        blinker.attach(1, blink);
+        led_status_set(&status_led_homekit_pairing);
         Serial.println("Waiting for accessory pairing");
         MIE_LOG("Waiting for accessory pairing");
         while (!homekit->paired) {
@@ -112,24 +101,19 @@ void setup() {
         }
         Serial.printf("%d clients connected.\n", arduino_homekit_connected_clients_count());
         MIE_LOG("%d clients connected.", arduino_homekit_connected_clients_count());
-        blinker.detach();
         delay(500);
     }
 
     if (homekit->paired) {
-        blinker.attach(0.33, blink);
         Serial.println("Connecting to heat pump... no more serial logging");
         MIE_LOG("Connecting to heat pump...");
         if (initHeatPump()) {
-            blinker.detach();
+            initHumidityReporting();
         } else {
-            blinker.attach(0.1, blink);
+            led_status_signal(&status_led_error);
         }
-
-        initHumidityReporting();
     }
-
-    timer.once(2, stopBlinker);
+    led_status_done();
 }
 
 void loop() {
