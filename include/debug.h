@@ -5,7 +5,7 @@
 
 extern xLogger Debug;
 
-void setupRemoteDebug(const char ssid[]);
+void initRemoteDebug(const char ssid[]);
 
 #ifdef MIE_DEBUG
 #define MIE_LOG(s, ...) Debug.printf(PSTR(s "\r\n"), ##__VA_ARGS__)

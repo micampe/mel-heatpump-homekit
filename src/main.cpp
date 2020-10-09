@@ -8,18 +8,18 @@
 #include "accessory.h"
 #include "debug.h"
 #include "heatpump_client.h"
+#include "homekit.h"
 #include "humidity.h"
-#include "ntp_clock.h"
 #include "led_status_patterns.h"
+#include "ntp_clock.h"
 
-#define NAME_PREFIX "MIE Heat Pump "
+#define NAME_PREFIX "Heat Pump "
 
 #define DRD_TIMEOUT 2.0
 #define DRD_ADDRESS 0x00
 DoubleResetDetect drd(DRD_TIMEOUT, DRD_ADDRESS);
 
 char ssid[25];
-homekit_server_t *homekit;
 
 void wifiConnectionFailed() {
     led_status_signal(&status_led_error);
@@ -31,11 +31,6 @@ void wifiConnectionFailed() {
 
 void wifiConfigModeCallback(WiFiManager *wifiManager) {
     led_status_set(&status_led_waiting_wifi);
-}
-
-void homekit_setup(char *ssid) {
-    accessory_name.value = HOMEKIT_STRING_CPP(ssid);
-    arduino_homekit_setup(&accessory_config);
 }
 
 void setup() {
@@ -70,49 +65,17 @@ void setup() {
     }
 
     initNTPClock();
-
-    Serial.println("Initializing remote debug...");
-    setupRemoteDebug(ssid);
-
-    Serial.println("Initializing OTA...");
+    initRemoteDebug(ssid);
     MIE_LOG("Initializing OTA...");
-    // no mDNS, HomeKit will do that
     ArduinoOTA.begin(false);
+    initHomeKitServer(ssid);
 
-    Serial.println("Starting HomeKit server...");
-    MIE_LOG("Starting HomeKit server...");
-    delay(500);
-    homekit_setup(ssid);
-    homekit = arduino_homekit_get_running_server();
-    if (!homekit->paired) {
-        led_status_set(&status_led_homekit_pairing);
-        Serial.println("Waiting for accessory pairing");
-        MIE_LOG("Waiting for accessory pairing");
-        while (!homekit->paired) {
-            arduino_homekit_loop();
-            ArduinoOTA.handle();
-            Debug.handle();
-            yield();
-        }
-        Serial.println("Paired, waiting for clients");
-        MIE_LOG("Paired, waiting for clients");
-        while (arduino_homekit_connected_clients_count() == 0) {
-            yield();
-        }
-        Serial.printf("%d clients connected.\n", arduino_homekit_connected_clients_count());
-        MIE_LOG("%d clients connected.", arduino_homekit_connected_clients_count());
-        delay(500);
+    if (initHeatPump()) {
+        initHumidityReporting();
+    } else {
+        led_status_signal(&status_led_error);
     }
 
-    if (homekit->paired) {
-        Serial.println("Connecting to heat pump... no more serial logging");
-        MIE_LOG("Connecting to heat pump...");
-        if (initHeatPump()) {
-            initHumidityReporting();
-        } else {
-            led_status_signal(&status_led_error);
-        }
-    }
     led_status_done();
 }
 

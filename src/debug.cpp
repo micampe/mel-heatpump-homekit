@@ -15,7 +15,9 @@ bool handleCommands(String &cmd) {
     return false;
 }
 
-void setupRemoteDebug(const char ssid[]) {
+void initRemoteDebug(const char ssid[]) {
+    Serial.println("Initializing remote debug...");
+
     Debug.begin(ssid);
     Debug.setProgramVersion((char *)GIT_DESCRIBE);
     Debug.setShowDebugLevel(false);

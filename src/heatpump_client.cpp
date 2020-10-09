@@ -394,6 +394,9 @@ void set_fan_swing(homekit_value_t value) {
 }
 
 bool initHeatPump() {
+    Serial.println("Connecting to heat pump... no more serial logging");
+    MIE_LOG("Connecting to heat pump...");
+
     ch_thermostat_target_heating_cooling_state.setter = set_target_heating_cooling_state;
     ch_thermostat_target_temperature.setter = set_target_temperature;
 
