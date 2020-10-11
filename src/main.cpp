@@ -6,7 +6,7 @@
 #include "debug.h"
 #include "heatpump_client.h"
 #include "homekit.h"
-#include "humidity.h"
+#include "env_sensor.h"
 #include "led_status_patterns.h"
 #include "ntp_clock.h"
 #include "wifi_manager.h"
@@ -29,10 +29,9 @@ void setup() {
     MIE_LOG("Initializing OTA...");
     ArduinoOTA.begin(false);
     initHomeKitServer(ssid);
+    initEnvironmentReporting(ssid);
 
-    if (initHeatPump()) {
-        initHumidityReporting();
-    } else {
+    if (!initHeatPump()) {
         led_status_signal(&status_led_error);
     }
 

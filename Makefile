@@ -5,6 +5,7 @@ all:
 
 upload-serial:
 	platformio --caller vim run --silent --target upload
+	pio device monitor --filter esp8266_exception_decoder
 
 upload-ota:
 	platformio --caller vim run --silent --environment ota --target upload

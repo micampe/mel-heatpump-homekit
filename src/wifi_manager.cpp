@@ -37,8 +37,8 @@ void initWiFiManager(const char* ssid) {
         Serial.println("Double reset detected");
         led_status_signal(&status_led_double_reset);
 
-        Serial.println("Clearing HomeKit config");
-        homekit_storage_reset();
+        // Serial.println("Clearing HomeKit config");
+        // homekit_storage_reset();
 
         Serial.println("Starting config portal");
         if (!wifiManager.startConfigPortal(ssid)) {

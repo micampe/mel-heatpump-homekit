@@ -19,7 +19,8 @@ Ticker syncTicker;
 
 // throttle updates to the heat pump to try to send more settings at once and
 // avoid conflicts when changing multiple settings from HomeKit
-#define UPDATE_INTERVAL 5
+#define UPDATE_INTERVAL 5000
+#define SYNC_INTERVAL 3000
 
 heatpumpSettings _settingsForCurrentState() {
     heatpumpSettings settings;
@@ -75,7 +76,7 @@ heatpumpSettings _settingsForCurrentState() {
 }
 
 void scheduleHeatPumpUpdate() {
-    updateTicker.once_scheduled(UPDATE_INTERVAL, [] {
+    updateTicker.once_ms_scheduled(UPDATE_INTERVAL, [] {
         unsigned long start = millis();
         heatpumpSettings settings = _settingsForCurrentState();
         heatpump.setSettings(settings);
@@ -414,7 +415,7 @@ bool initHeatPump() {
     heatpump.enableExternalUpdate();
     heatpump.disableAutoUpdate();
 
-    syncTicker.attach_ms_scheduled(500, [] {
+    syncTicker.attach_ms_scheduled(SYNC_INTERVAL, [] {
         unsigned long start = millis();
         if (heatpump.isConnected()) {
             heatpump.sync();
@@ -425,6 +426,7 @@ bool initHeatPump() {
         }
     });
 
+    delay(100);
     if (heatpump.connect(&Serial)) {
         MIE_LOG("Heat pump connected");
         return true;
