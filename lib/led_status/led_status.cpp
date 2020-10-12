@@ -12,8 +12,8 @@ typedef struct {
     uint8_t active;
 
     int n;
-    led_status_pattern_t *pattern;
-    led_status_pattern_t *signal_pattern;
+    const led_status_pattern_t *pattern;
+    const led_status_pattern_t *signal_pattern;
 } led_status_t;
 
 led_status_t status;
@@ -25,7 +25,7 @@ static void led_status_write(bool on) {
 }
 
 static void led_status_tick() {
-    led_status_pattern_t *p = status.signal_pattern ? status.signal_pattern : status.pattern;
+    const led_status_pattern_t *p = status.signal_pattern ? status.signal_pattern : status.pattern;
     if (!p) {
         ticker.detach();
         led_status_write(false);
@@ -54,7 +54,7 @@ void led_status_done() {
     status.pattern = NULL;
 }
 
-void led_status_set(led_status_pattern_t *pattern) {
+void led_status_set(const led_status_pattern_t *pattern) {
     status.pattern = pattern;
 
     if (!status.signal_pattern) {
@@ -63,7 +63,7 @@ void led_status_set(led_status_pattern_t *pattern) {
     }
 }
 
-void led_status_signal(led_status_pattern_t *pattern) {
+void led_status_signal(const led_status_pattern_t *pattern) {
     if (!status.signal_pattern && !pattern)
         return;
 

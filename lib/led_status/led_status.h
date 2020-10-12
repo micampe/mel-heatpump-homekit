@@ -8,7 +8,7 @@ void led_status_done();
 
 // Set looped pattern that will be executing until changed.
 // Passing NULL as pattern disables blinking.
-void led_status_set(led_status_pattern_t *pattern);
+void led_status_set(const led_status_pattern_t *pattern);
 
 // Execute given pattern once and then return to pattern set by led_status_set().
-void led_status_signal(led_status_pattern_t *pattern);
+void led_status_signal(const led_status_pattern_t *pattern);

@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include <ArduinoOTA.h>
 #include <arduino_homekit_server.h>
-#include <led_status.h>
 
 #include "debug.h"
 #include "heatpump_client.h"

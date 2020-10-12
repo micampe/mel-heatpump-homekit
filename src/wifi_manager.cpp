@@ -4,7 +4,6 @@
 #include <DoubleResetDetect.h>
 #include <WiFiManager.h>
 #include <arduino_homekit_server.h>
-#include <led_status.h>
 
 #include "led_status_patterns.h"
 
