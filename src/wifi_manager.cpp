@@ -3,10 +3,12 @@
 #include <ArduinoOTA.h>
 #include <DoubleResetDetect.h>
 #include <WiFiManager.h>
+#include <Ticker.h>
 #include <arduino_homekit_server.h>
 
 #include "led_status_patterns.h"
 
+WiFiManager wifiManager;
 
 #define DRD_TIMEOUT 2.0
 #define DRD_ADDRESS 0x00
@@ -28,7 +30,6 @@ static void wifiConfigModeCallback(WiFiManager *wifiManager) {
 void initWiFiManager(const char* ssid) {
     WiFi.setSleepMode(WIFI_NONE_SLEEP);
 
-    WiFiManager wifiManager;
     wifiManager.setAPCallback(wifiConfigModeCallback);
     wifiManager.setTimeout(120);
 

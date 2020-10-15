@@ -1,3 +1,6 @@
 [submodule "lib/Arduino-HomeKit-ESP8266"]
 	path = lib/Arduino-HomeKit-ESP8266
 	url = git@github.com:micampe/Arduino-HomeKit-ESP8266
+[submodule "lib/WiFiManager"]
+	path = lib/WiFiManager
+	url = git@github.com:micampe/WiFiManager
