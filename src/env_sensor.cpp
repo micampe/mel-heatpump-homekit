@@ -9,10 +9,11 @@
 #include "env_sensor.h"
 #include "debug.h"
 #include "accessory.h"
+#include "heatpump_client.h"
 
 // FIXME: this should be configurable
 #define MQTT_SERVER "192.168.1.249"
-#define SAMPLE_INTERVAL 30
+#define SAMPLE_INTERVAL 300
 
 // FIXME: name should be configurable
 const char *sensorName;
@@ -57,8 +58,7 @@ static void _updateSensorReading() {
 
     _set_characteristic_float(&ch_dehumidifier_relative_humidity, humidity, true);
     _set_characteristic_float(&ch_dew_point, dewPoint, true);
-    if (ch_thermostat_current_temperature.value.float_value < 0.001) {
-        // set the thermostat temperature from the sensor only if it doesn't have its own reading
+    if (!heatpump.isConnected()) {
         _set_characteristic_float(&ch_thermostat_current_temperature, temperature, true);
     }
 }
