@@ -1,20 +1,16 @@
-GIT_DESCRIBE := $(shell git describe --match 'v*' --dirty='-x' --always)
+GIT_DESCRIBE := $(shell git describe --match 'v*' --dirty='-x' --always --abbrev=4)
 
 all:
-	platformio --caller vim run --silent
+	platformio --caller vim run --silent --environment serial
 
 upload-serial:
-	platformio --caller vim run --silent --target upload --target monitor
+	platformio --caller vim run --silent --environment serial --target upload --target monitor
 
 upload-ota:
 	platformio --caller vim run --silent --environment ota --target upload
 
-upload-prod:
-	platformio --caller vim run --silent --environment prod --target upload
-
-dist:
-	platformio --caller vim run --silent --environment prod
-	cp .pio/build/prod/firmware.bin bin/mie-heatpump_$(GIT_DESCRIBE).bin
+dist:	all
+	cp .pio/build/serial/firmware.bin bin/mie-heatpump_$(GIT_DESCRIBE).bin
 
 clean:
 	platformio --caller vim run -t clean
