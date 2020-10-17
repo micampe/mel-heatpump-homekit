@@ -14,7 +14,6 @@ void initNTPClock() {
 
     settimeofday_cb([] {
         timeWasSet = true;
-        MIE_LOG("NTP synced");
     });
 
     MIE_LOG("Syncing NTP time...");
