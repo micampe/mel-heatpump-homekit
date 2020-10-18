@@ -10,7 +10,8 @@ upload-ota:
 	platformio --caller vim run --silent --environment ota --target upload
 
 dist:	all
-	cp .pio/build/serial/firmware.bin bin/mie-heatpump_$(GIT_DESCRIBE).bin
+	cp .pio/build/serial/firmware.bin bin/mel_heatpump_$(GIT_DESCRIBE).bin
+	gzip --force bin/mel_heatpump_$(GIT_DESCRIBE).bin
 
 clean:
 	platformio --caller vim run -t clean

@@ -8,6 +8,7 @@
 #include "env_sensor.h"
 #include "led_status_patterns.h"
 #include "ntp_clock.h"
+#include "web.h"
 #include "wifi_manager.h"
 
 #define NAME_PREFIX "Heat Pump "
@@ -25,10 +26,13 @@ void setup() {
     initWiFiManager(ssid);
     initNTPClock();
     initRemoteDebug(ssid);
+
     MIE_LOG("Initializing OTA...");
     ArduinoOTA.begin(false);
     initHomeKitServer(ssid);
     initEnvironmentReporting(ssid);
+
+    initWeb();
 
     if (!initHeatPump()) {
         led_status_signal(&status_led_error);
@@ -38,6 +42,7 @@ void setup() {
 }
 
 void loop() {
+    httpServer.handleClient();
     ArduinoOTA.handle();
     arduino_homekit_loop();
     Debug.handle();
