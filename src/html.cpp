@@ -44,11 +44,15 @@ input[type='file'] {
   border:1px solid #1fa3ec
 }
 
+button.danger {
+  background-color: #dc3630;
+}
+
 .wrap {
   text-align: left;
   display: inline-block;
   min-width: 260px;
-  max-width:500px
+  max-width: 400px
 }
 
 dl {
@@ -72,6 +76,10 @@ dd:after {
   content: '';
 }
 
+#upload_form {
+  padding-bottom: 40px;
+}
+
 .footer {
   border-top: solid 1px darkgray;
   padding-top: 8px;
@@ -92,34 +100,78 @@ function _(s) {
     }
 }
 
-function upload(e) {
-    _('#upload_button').innerHTML = 'Uploading…'
-    _('#upload_button').disabled = true
+function rebootingTimer(button, msg) {
+    let counter = 30
+    setInterval(function() {
+        if (counter >= 0) {
+            button.innerHTML = msg + counter + "s"
+            counter -= 1
+        } else {
+            window.location.reload(1)
+        }
+    }, 1000);
+}
 
-    let file = _('#firmware_file')
+function upload(e) {
+    e.preventDefault()
     let form = _('#upload_form')
+    let button = form.querySelector('button')
+    button.innerHTML = 'Uploading…'
+    button.disabled = true
+
     let formData = new FormData(form)
     let request = new XMLHttpRequest()
-    request.open('POST', form.action, true)
     request.onload = function(e) {
         let response = this.responseText
         if (response.includes('Update Success')) {
-            let counter = 30
-            setInterval(function() {
-                if (counter >= 0) {
-                    _('#upload_button').innerHTML = 'Done, rebooting… '+ counter + "s"
-                    counter -= 1
-                } else {
-                    window.location.reload(1)
-                }
-            }, 1000);
+            rebootingTimer(button, 'Done, rebooting… ')
         } else {
-            _('#upload_button').style = 'background-color:darkred'
-            _('#upload_button').innerHTML = 'Error: ' + response.substr(response.indexOf(':') + 2)
+            button.style = 'background-color:darkred'
+            button.innerHTML = 'Error: ' + response.substr(response.indexOf(':') + 2)
         }
     }
+    request.open('POST', form.action)
     request.send(formData)
-    return false
+}
+
+function reboot(e) {
+    e.preventDefault()
+    let form = this
+    let button = this.querySelector('button')
+    let request = new XMLHttpRequest()
+    request.onload = function (e) {
+        if (request.status == 200) {
+          rebootingTimer(button, 'Rebooting… ')
+        }
+    }
+    request.open('POST', form.action)
+    request.send()
+}
+
+function confirm(button) {
+    var origContent = button.innerHTML
+    var clickTime
+    var tid
+    var state = 0
+
+    function cancel() {
+        state = 0
+        button.innerHTML = origContent
+    }
+
+    return function(event) {
+        if (state == 0) {
+            event.preventDefault()
+            state = 1
+            clickTime = +new Date()
+            button.innerHTML = 'Are you sure?'
+            tid = setTimeout(cancel, 3000)
+        } else if (new Date() - clickTime < 500) {
+            event.preventDefault()
+        } else {
+            clearTimeout(tid)
+        }
+    }
 }
 
 window.onload = function () {
@@ -127,7 +179,12 @@ window.onload = function () {
         _('#upload_button').disabled = this.files.lenght === 0
     }
 
-    _('#upload_button').onclick = upload
+    _('.needsConfirm').forEach(function (button) {
+        button.onclick = confirm(button)
+    })
+
+    _('#upload_form').onsubmit = upload
+    _('#reboot_form').onsubmit = reboot
 }
 </script>
 <body>
@@ -140,7 +197,10 @@ window.onload = function () {
     </dl>
     <form id='upload_form' action='/_update' method='post' enctype='multipart/form-data'>
       <input id='firmware_file' name='firmware' type='file' accept='.bin,.bin.gz,.gz'>
-      <button id='upload_button' type='submit' disabled>Update Firmware</button>
+      <button id='upload_button' disabled>Update Firmware</button>
+    </form>
+    <form id='reboot_form' action='/_reboot' method='post'>
+      <button id='reboot_button' class="needsConfirm">Reboot ESP</button>
     </form>
     <p class="footer">
     <a href="https://github.com/micampe/mel-heatpump-homekit">

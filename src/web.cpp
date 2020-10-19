@@ -5,6 +5,8 @@
 #include <ESP8266mDNS.h>
 #include <Time.h>
 
+#include "debug.h"
+
 // CLI update:
 // curl -F "firmware=@<FILENAME>.bin" <ADDRESS>/_update
 
@@ -47,6 +49,13 @@ void initWeb() {
         html.replace("__FIRMWARE_VERSION__", GIT_DESCRIBE);
 
         httpServer.send(200, "text/html", html);
+    });
+
+    httpServer.on("/_reboot", HTTP_POST, []() {
+        MIE_LOG("Reboot from web UI...");
+        httpServer.send(200, "text/html", "Rebooting...");
+        delay(1000);
+        ESP.restart();
     });
 
     // homekit already initialized MDNS
