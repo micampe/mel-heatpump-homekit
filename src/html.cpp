@@ -26,7 +26,7 @@ input, button {
   width: 100%
 }
 
-button, input[type='button'], input[type='submit'] {
+button {
   cursor: pointer;
   border: 0;
   background-color: #1fa3ec;
@@ -36,7 +36,7 @@ button, input[type='button'], input[type='submit'] {
   width: 100%
 }
 
-button:disabled, input[type='button']:disabled, input[type='submit']:disabled {
+button:disabled {
   background-color: lightgray;
 }
 
@@ -93,6 +93,16 @@ form#upload_form {
 .footer a {
   font-size: smaller;
   color: darkgray;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    color: #ddd;
+    background: #121212;
+  }
+  button:disabled {
+    background-color: #333;
+  }
 }
 </style>
 </head>
