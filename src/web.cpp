@@ -4,8 +4,10 @@
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
 #include <Time.h>
+#include <arduino_homekit_server.h>
 
 #include "debug.h"
+#include "heatpump_client.h"
 
 // CLI update:
 // curl -F "firmware=@<FILENAME>.bin" <ADDRESS>/_update
@@ -44,6 +46,7 @@ void initWeb() {
 
         String html = String(index_html);
         html.replace("__TITLE__", WiFi.hostname());
+        html.replace("__HEAT_PUMP_STATUS__", heatpump.isConnected() ? "connected" : "not connected");
         html.replace("__UPTIME__", uptime);
         html.replace("__HEAP__", String(ESP.getFreeHeap()));
         html.replace("__FIRMWARE_VERSION__", GIT_DESCRIBE);
@@ -52,8 +55,16 @@ void initWeb() {
     });
 
     httpServer.on("/_reboot", HTTP_POST, []() {
-        MIE_LOG("Reboot from web UI...");
+        MIE_LOG("Reboot from web UI");
         httpServer.send(200, "text/html", "Rebooting...");
+        delay(1000);
+        ESP.restart();
+    });
+
+    httpServer.on("/_unpair", HTTP_POST, []() {
+        MIE_LOG("Reset HomeKit pairing");
+        httpServer.send(200, "text/html", "Reset HomeKit pairing. Rebooting...");
+        homekit_storage_reset();
         delay(1000);
         ESP.restart();
     });
