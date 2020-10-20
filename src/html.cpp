@@ -3,11 +3,11 @@
 // generated file, edit web/index.html
 const char* index_html PROGMEM = R"====(
 <!DOCTYPE html>
-<html>
+<html lang='en'>
 <head>
 <title>__TITLE__</title>
 <meta charset='utf-8'>
-<meta name='viewport' content='width=device-width,initial-scale=1,user-scalable=no'/>
+<meta name='viewport' content='width=device-width,initial-scale=1'/>
 <style>
 body {
   text-align: center;
@@ -76,12 +76,21 @@ dd:after {
   content: '';
 }
 
+h2 {
+  padding-top: 20px;
+}
+
 form {
   margin-bottom: 10px;
 }
 
 form#upload_form {
   margin-bottom: 40px;
+}
+
+.caption {
+  font-size: small;
+  color: darkgray;
 }
 
 .footer {
@@ -106,6 +115,7 @@ form#upload_form {
 }
 </style>
 </head>
+<body>
 <script>
 function _(s) {
     if (s.charAt(0) === '#') {
@@ -189,6 +199,32 @@ function confirm(button) {
     }
 }
 
+function saveSettings(e) {
+    e.preventDefault()
+    let formData = new FormData(this)
+    let button = this.querySelector('button')
+    let request = new XMLHttpRequest()
+    request.onload = function(e) {
+        let orig = button.innerHTML
+        button.innerHTML = 'Saved'
+        setTimeout(function() { button.innerHTML = orig }, 2000)
+    }
+    request.open('POST', '/_settings')
+    request.send(formData)
+}
+
+function loadSettings() {
+    let request = new XMLHttpRequest()
+    request.onload = function (ev) {
+        let json = JSON.parse(request.response)
+        for (let key in json) {
+            _('[name=' + key + ']')[0].value = json[key]
+        }
+    }
+    request.open('GET', '/_settings')
+    request.send()
+}
+
 window.onload = function () {
     _('#firmware_file').onchange = function (e) {
         _('#upload_button').disabled = this.files.lenght === 0
@@ -201,9 +237,11 @@ window.onload = function () {
     _('#upload_form').onsubmit = upload
     _('#reboot_form').onsubmit = reboot
     _('#unpair_form').onsubmit = reboot
+    _('#settings_form').onsubmit = saveSettings
+
+    loadSettings()
 }
 </script>
-<body>
   <div class='wrap'>
     <h1>__TITLE__</h1>
     <dl>
@@ -212,6 +250,28 @@ window.onload = function () {
     <dt>Heap:</dt><dd>__HEAP__B</dd>
     <dt>Firmware:</dt><dd>__FIRMWARE_VERSION__</dd>
     </dl>
+    <h2>Settings</h2>
+    <form id='settings_form' action='/_settings' method='post'>
+      <p><label for='mqtt_server'>MQTT Broker</label>
+      <input placeholder='Address' name='mqtt_server' type='text' maxlength=32>
+      <input placeholder='Port' value='1883' name='mqtt_port' type='text' maxlength=6>
+      </p>
+      <p><label for='mqtt_temp'>Environment Sensor</label>
+      <input placeholder='Temperature reporting topic' name='mqtt_temp' type='text' maxlength=80>
+      <input placeholder='Relative humidity reporting topic' name='mqtt_hum' type='text' maxlength=80>
+      <span class='caption'>If these topics are set, temperature and relative
+      humidity readings will be periodically posted to mqtt. &mdash; This feature requires a BME280
+      or DHT22 temperature and humidity sensor connected to the ESP8266.</p>
+  <!--
+      <p><label for='mqtt_remote_temp'>Remote Temperature</label>
+      <input placeholder='Remote temperature topic' name='mqtt_remote_temp' type='text' maxlength=80>
+      <span class='caption'>An external room sensor can report the temperature for the heat pump
+      thermostat.</p>
+  -->
+      <button>Save Settings</button>
+      <p class='caption'>Saving settings will reboot the ESP.</p>
+    </form>
+    <h2>Firmware Update</h2>
     <form id='upload_form' action='/_update' method='post' enctype='multipart/form-data'>
       <input id='firmware_file' name='firmware' type='file' accept='.bin,.bin.gz,.gz'>
       <button id='upload_button' disabled>Update Firmware</button>

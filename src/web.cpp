@@ -3,14 +3,19 @@
 #include <ESP8266HTTPUpdateServer.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
+#include <LittleFS.h>
 #include <Time.h>
 #include <arduino_homekit_server.h>
+// this needs to be after the homekit header
+#include <ArduinoJson.h>
 
 #include "debug.h"
 #include "heatpump_client.h"
 
 // CLI update:
 // curl -F "firmware=@<FILENAME>.bin" <ADDRESS>/_update
+
+#define CONFIG_FILE "/config.json"
 
 ESP8266WebServer httpServer(80);
 ESP8266HTTPUpdateServer updateServer;
@@ -42,6 +47,12 @@ void uptimeString(String &str) {
 void initWeb(const char* hostname) {
     updateServer.setup(&httpServer, "/_update");
 
+    LittleFS.begin();
+    if (!LittleFS.exists(CONFIG_FILE)) {
+        File config = LittleFS.open(CONFIG_FILE, "w");
+        config.write("{}");
+    }
+
     httpServer.on("/", HTTP_GET, []() {
         uint32_t heap = ESP.getFreeHeap();
         String uptime;
@@ -55,6 +66,41 @@ void initWeb(const char* hostname) {
         response.replace("__FIRMWARE_VERSION__", GIT_DESCRIBE);
 
         httpServer.send(200, mimeTable[html].mimeType, response);
+    });
+
+    httpServer.on("/_settings", HTTP_GET, []() {
+        File config = LittleFS.open(CONFIG_FILE, "r");
+        httpServer.send(200, mimeTable[json].mimeType, config.readString());
+    });
+
+    httpServer.on("/_settings", HTTP_POST, []() {
+        File config = LittleFS.open(CONFIG_FILE, "r");
+        StaticJsonDocument<300> doc;
+        deserializeJson(doc, config);
+        config.close();
+
+        String message;
+        for (uint8_t i = 0; i < httpServer.args(); i++) {
+            String arg = httpServer.argName(i);
+            String value = httpServer.arg(i);
+            if (arg != "plain") {
+                if (value.length() > 0) {
+                    doc[arg] = value;
+                } else {
+                    doc.remove(arg);
+                }
+            }
+        }
+
+        config = LittleFS.open(CONFIG_FILE, "w");
+        serializeJson(doc, config);
+        config.close();
+
+        String response;
+        serializeJsonPretty(doc, response);
+        httpServer.send(200, mimeTable[json].mimeType, response);
+        // delay(1000);
+        // ESP.restart();
     });
 
     httpServer.on("/_reboot", HTTP_POST, []() {

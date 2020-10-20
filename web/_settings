@@ -1,0 +1,7 @@
+{
+	"mqtt_server": "192.168.1.249",
+	"mqtt_port": "1883",
+	"mqtt_temp": "/home/sensor/dev/temperature",
+	"mqtt_hum": "/home/sensor/dev/humidity",
+	"mqtt_remote_temp": "/home/hvac/remote_temperature"
+}
