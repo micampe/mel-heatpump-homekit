@@ -41,6 +41,7 @@ void initWeb(const char* hostname) {
     updateServer.setup(&httpServer, "/_update");
 
     httpServer.on("/", HTTP_GET, []() {
+        uint32_t heap = ESP.getFreeHeap();
         String uptime;
         uptimeString(uptime);
 
@@ -48,7 +49,7 @@ void initWeb(const char* hostname) {
         html.replace("__TITLE__", WiFi.hostname());
         html.replace("__HEAT_PUMP_STATUS__", heatpump.isConnected() ? "connected" : "not connected");
         html.replace("__UPTIME__", uptime);
-        html.replace("__HEAP__", String(ESP.getFreeHeap()));
+        html.replace("__HEAP__", String(heap));
         html.replace("__FIRMWARE_VERSION__", GIT_DESCRIBE);
 
         httpServer.send(200, "text/html", html);
