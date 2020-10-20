@@ -12,6 +12,7 @@
 #include "heatpump_client.h"
 #include "led_status_patterns.h"
 
+static char serial[7];
 static Ticker updateTicker;
 
 // throttle updates to the heat pump to try to send more settings at once and
@@ -204,7 +205,11 @@ void set_fan_swing(homekit_value_t value) {
 void initHomeKitServer(const char *ssid, std::function<void()> loop) {
     Serial.println("Starting HomeKit server...");
     MIE_LOG("Starting HomeKit server...");
+
+    sprintf(serial, "%06x", ESP.getChipId());
+    accessory_serial.value = HOMEKIT_STRING_CPP(serial);
     accessory_name.value = HOMEKIT_STRING_CPP((char*)ssid);
+
     arduino_homekit_setup(&accessory_config);
     homekit_server_t *homekit = arduino_homekit_get_running_server();
     if (!homekit->paired) {

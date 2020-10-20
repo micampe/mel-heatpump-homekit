@@ -7,7 +7,6 @@
 #include "custom_characteristics.h"
 
 #define ACCESSORY_NAME  "Mitsubishi Air Conditioner"
-#define ACCESSORY_SN  GIT_HASH
 #define ACCESSORY_MANUFACTURER "github.com micampe"
 #define ACCESSORY_MODEL  GIT_DESCRIBE
 #define ACCESSORY_FW_REV  GIT_COMMITS
@@ -190,6 +189,7 @@ homekit_service_t fan_service = HOMEKIT_SERVICE_(FAN2,
 
 // Accessories
 homekit_characteristic_t accessory_name = HOMEKIT_CHARACTERISTIC_(NAME, ACCESSORY_NAME);
+homekit_characteristic_t accessory_serial = HOMEKIT_CHARACTERISTIC_(SERIAL_NUMBER, "000");
 
 homekit_accessory_t *accessories[] = {
     HOMEKIT_ACCESSORY(.id = 1,
@@ -197,8 +197,8 @@ homekit_accessory_t *accessories[] = {
         .services = (homekit_service_t *[]) {
             HOMEKIT_SERVICE(ACCESSORY_INFORMATION, .characteristics = (homekit_characteristic_t *[]) {
                 &accessory_name,
+                &accessory_serial,
                 HOMEKIT_CHARACTERISTIC(MANUFACTURER, ACCESSORY_MANUFACTURER),
-                HOMEKIT_CHARACTERISTIC(SERIAL_NUMBER, ACCESSORY_SN),
                 HOMEKIT_CHARACTERISTIC(MODEL, ACCESSORY_MODEL),
                 HOMEKIT_CHARACTERISTIC(FIRMWARE_REVISION, ACCESSORY_FW_REV),
                 HOMEKIT_CHARACTERISTIC(IDENTIFY, accessory_identify),

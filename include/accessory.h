@@ -40,6 +40,7 @@ extern homekit_characteristic_t ch_fan_target_state;
 
 // Accessory
 extern homekit_characteristic_t accessory_name;
+extern homekit_characteristic_t accessory_serial;
 extern homekit_server_config_t accessory_config;
 
 // Helpers
