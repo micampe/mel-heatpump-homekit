@@ -15,6 +15,8 @@
 ESP8266WebServer httpServer(80);
 ESP8266HTTPUpdateServer updateServer;
 
+using namespace mime;
+
 extern const char* index_html;
 
 void uptimeString(String &str) {
@@ -45,26 +47,26 @@ void initWeb(const char* hostname) {
         String uptime;
         uptimeString(uptime);
 
-        String html = String(index_html);
-        html.replace("__TITLE__", WiFi.hostname());
-        html.replace("__HEAT_PUMP_STATUS__", heatpump.isConnected() ? "connected" : "not connected");
-        html.replace("__UPTIME__", uptime);
-        html.replace("__HEAP__", String(heap));
-        html.replace("__FIRMWARE_VERSION__", GIT_DESCRIBE);
+        String response = String(index_html);
+        response.replace("__TITLE__", WiFi.hostname());
+        response.replace("__HEAT_PUMP_STATUS__", heatpump.isConnected() ? "connected" : "not connected");
+        response.replace("__UPTIME__", uptime);
+        response.replace("__HEAP__", String(heap));
+        response.replace("__FIRMWARE_VERSION__", GIT_DESCRIBE);
 
-        httpServer.send(200, "text/html", html);
+        httpServer.send(200, mimeTable[html].mimeType, response);
     });
 
     httpServer.on("/_reboot", HTTP_POST, []() {
         MIE_LOG("Reboot from web UI");
-        httpServer.send(200, "text/html", "Rebooting...");
+        httpServer.send(200, mimeTable[html].mimeType, "Rebooting...");
         delay(1000);
         ESP.restart();
     });
 
     httpServer.on("/_unpair", HTTP_POST, []() {
         MIE_LOG("Reset HomeKit pairing");
-        httpServer.send(200, "text/html", "Reset HomeKit pairing. Rebooting...");
+        httpServer.send(200, mimeTable[html].mimeType, "Reset HomeKit pairing. Rebooting...");
         homekit_storage_reset();
         delay(1000);
         ESP.restart();
