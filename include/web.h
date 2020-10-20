@@ -4,4 +4,4 @@
 
 extern ESP8266WebServer httpServer;
 
-void initWeb();
+void initWeb(const char* hostname);

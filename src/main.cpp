@@ -12,8 +12,10 @@
 #include "wifi_manager.h"
 
 #define NAME_PREFIX "Heat Pump "
+#define HOSTNAME_PREFIX "heat-pump-"
 
 char ssid[25];
+char hostname[25];
 
 void setup() {
     Serial.begin(115200);
@@ -22,17 +24,17 @@ void setup() {
     led_status_init(LED_BUILTIN, false);
 
     sprintf(ssid, NAME_PREFIX "%06x", ESP.getChipId());
+    sprintf(hostname, HOSTNAME_PREFIX "%06x", ESP.getChipId());
 
     initWiFiManager(ssid);
     initNTPClock();
     initRemoteDebug(ssid);
+    initWeb(hostname);
 
     MIE_LOG("Initializing OTA...");
     ArduinoOTA.begin(false);
-    initHomeKitServer(ssid);
+    initHomeKitServer(ssid, loop);
     initEnvironmentReporting(ssid);
-
-    initWeb();
 
     if (!initHeatPump()) {
         led_status_signal(&status_led_error);

@@ -37,7 +37,7 @@ void uptimeString(String &str) {
     str += String(seconds) + "s";
 }
 
-void initWeb() {
+void initWeb(const char* hostname) {
     updateServer.setup(&httpServer, "/_update");
 
     httpServer.on("/", HTTP_GET, []() {
@@ -69,7 +69,7 @@ void initWeb() {
         ESP.restart();
     });
 
-    // homekit already initialized MDNS
+    MDNS.begin(hostname);
     MDNS.addService("http", "tcp", 80);
     httpServer.begin();
 }

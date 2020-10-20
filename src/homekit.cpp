@@ -200,7 +200,8 @@ void set_fan_swing(homekit_value_t value) {
 }
 
 
-void initHomeKitServer(const char *ssid) {
+// the loop function will be called during the pairing process
+void initHomeKitServer(const char *ssid, std::function<void()> loop) {
     Serial.println("Starting HomeKit server...");
     MIE_LOG("Starting HomeKit server...");
     accessory_name.value = HOMEKIT_STRING_CPP((char*)ssid);
@@ -213,9 +214,7 @@ void initHomeKitServer(const char *ssid) {
         led_status_set(&status_led_homekit_pairing);
 
         while (!homekit->paired) {
-            arduino_homekit_loop();
-            ArduinoOTA.handle();
-            Debug.handle();
+            loop();
             yield();
         }
         delay(100);
