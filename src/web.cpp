@@ -24,24 +24,22 @@ using namespace mime;
 
 extern const char* index_html;
 
-void uptimeString(String &str) {
+void uptimeString(char* str, int size) {
     long val = millis() / 1000;
     int days = elapsedDays(val);
     int hours = numberOfHours(val);
     int minutes = numberOfMinutes(val);
     int seconds = numberOfSeconds(val);
 
-    str = "";
     if (days > 0) {
-        str = String(days) + "d ";  
+        snprintf(str, size, "%dd %dh %dm %ds", days, hours, minutes, seconds);
+    } else if (hours > 0) {
+        snprintf(str, size, "%dh %dm %ds", hours, minutes, seconds);
+    } else if (minutes > 0) {
+        snprintf(str, size, "%dm %ds", minutes, seconds);
+    } else {
+        snprintf(str, size, "%ds", seconds);
     }
-    if (hours > 0) {
-        str += String(hours) + "h ";  
-    }
-    if (minutes > 0) {
-        str += String(minutes) + "m ";
-    }
-    str += String(seconds) + "s";
 }
 
 void initWeb(const char* hostname) {
@@ -54,9 +52,10 @@ void initWeb(const char* hostname) {
     }
 
     httpServer.on("/", HTTP_GET, []() {
-        uint32_t heap = ESP.getFreeHeap();
-        String uptime;
-        uptimeString(uptime);
+        char heap[7];
+        snprintf(heap, 7, "%d.%03d", ESP.getFreeHeap() / 1000, ESP.getFreeHeap() % 1000);
+        char uptime[20];
+        uptimeString(uptime, 20);
 
         String response = String(index_html);
         response.replace("__TITLE__", WiFi.hostname());
@@ -70,7 +69,9 @@ void initWeb(const char* hostname) {
 
     httpServer.on("/_settings", HTTP_GET, []() {
         File config = LittleFS.open(CONFIG_FILE, "r");
-        httpServer.send(200, mimeTable[json].mimeType, config.readString());
+        char bytes[config.size()];
+        config.readBytes(bytes, config.size());
+        httpServer.send(200, mimeTable[json].mimeType, bytes);
     });
 
     httpServer.on("/_settings", HTTP_POST, []() {
@@ -79,7 +80,6 @@ void initWeb(const char* hostname) {
         deserializeJson(doc, config);
         config.close();
 
-        String message;
         for (uint8_t i = 0; i < httpServer.args(); i++) {
             String arg = httpServer.argName(i);
             String value = httpServer.arg(i);
@@ -96,8 +96,9 @@ void initWeb(const char* hostname) {
         serializeJson(doc, config);
         config.close();
 
-        String response;
-        serializeJsonPretty(doc, response);
+        size_t size = measureJson(doc);
+        char response[size];
+        serializeJsonPretty(doc, response, size);
         httpServer.send(200, mimeTable[json].mimeType, response);
         // delay(1000);
         // ESP.restart();

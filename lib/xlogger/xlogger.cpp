@@ -112,8 +112,8 @@ bool xLogger::ExecCommand(const String &cmd) {
   }
 
   if (cmd == "uptime") {
-    String str;
-    eTimeToStr(str, now() - lastBootTime);
+    char str[20];
+    uptimeString(str, 20, millis() / 1000);
     println(str);
     return true;
   }
@@ -258,12 +258,12 @@ void xLogger::showInitMessage() {
   msg += SF("\r\nMac : ") + WiFi.macAddress();
   msg += SF("\r\nHeap: ") + String(ESP.getFreeHeap());
 
-  String str;
-  utcTimeToStr(str, lastBootTime);
+  char str[20];
+  utcTimeToStr(str, 20, lastBootTime);
   msg += SF("\r\nBoot  : ") + str;
-  utcTimeToStr(str, now());
+  utcTimeToStr(str, 20, now());
   msg += SF("\r\nTime  : ") + str;
-  eTimeToStr(str, now() - lastBootTime);
+  uptimeString(str, 20, millis() / 1000);
   msg += SF("\r\nUptime: ") + str;
 
   msg += SF("\r\n\r\nCommands:\r\n");
@@ -397,7 +397,9 @@ void xLogger::formatLogMessage(String &str, const char *buffer, size_t size, Log
     // show time
     switch (logTimeFormat) {
       case ltStrTime:
-        eTimeToStr(str, header->logTime / 1000);
+        char uptime[20];
+        uptimeString(uptime, 20, header->logTime / 1000);
+        str = String(uptime);
         str += SF(" ");
         break;
       case ltMsTime:
@@ -411,7 +413,9 @@ void xLogger::formatLogMessage(String &str, const char *buffer, size_t size, Log
         break;
       case ltUTCTime:
         if (timeStatus() != timeNotSet) {
-          utcTimeToStr(str, lastBootTime + header->logTime / 1000);
+          char time[20];
+          utcTimeToStr(time, 20, lastBootTime + header->logTime / 1000);
+          str = String(time);
           str += SF(" ");
         } else {
           str = "[NTP sync error] ";
@@ -490,56 +494,24 @@ size_t xLogger::write(const uint8_t *buffer, size_t size) {
   return size;
 }
 
-// non class functions
-void eTimeToStr(String &str, long val, bool fullPrint){  
-  int days = elapsedDays(val);
-  int hours = numberOfHours(val);
-  int minutes = numberOfMinutes(val);
-  int seconds = numberOfSeconds(val);
+void uptimeString(char* str, size_t size, long val) {
+    int days = elapsedDays(val);
+    int hours = numberOfHours(val);
+    int minutes = numberOfMinutes(val);
+    int seconds = numberOfSeconds(val);
 
-  str = "";
-  if (fullPrint || days) {
-    str = String(days) + "d ";  
-  }
-  if (fullPrint || hours) {
-    str += String(hours) + "h ";  
-  }
-  if (fullPrint || minutes) {
-   str += String(minutes) + "m ";
-  }
-  str += String(seconds) + "s";
+    if (days > 0) {
+        snprintf(str, size, "%dd %dh %dm %ds", days, hours, minutes, seconds);
+    } else if (hours > 0) {
+        snprintf(str, size, "%dh %dm %ds", hours, minutes, seconds);
+    } else if (minutes > 0) {
+        snprintf(str, size, "%dm %ds", minutes, seconds);
+    } else {
+        snprintf(str, size, "%ds", seconds);
+    }
 }
 
-void utcTimeToStr(String &str, time_t time) {
-  str = String(year(time)) + "-";
-  int _month = month(time);
-  if (_month < 10) {
-    str += "0" + String(_month) + "-";
-  } else {
-    str += String(_month) + "-";
-  }
-  int _day = day(time);
-  if (_day < 10) {
-    str += "0" + String(_day) + " ";
-  } else {
-    str += String(_day) + " ";
-  }
-  int _hour = hour(time);
-  if (_hour < 10) {
-    str += "0" + String(_hour) + ":";
-  } else {
-    str += String(_hour) + ":";
-  }
-  int _minute = minute(time);
-  if (_minute < 10) {
-    str += "0" + String(_minute) + ":";
-  } else {
-    str += String(_minute) + ":";
-  }
-  int _second = second(time);
-  if (_second < 10) {
-    str += "0" + String(_second);
-  } else {
-    str += String(_second);
-  }
+void utcTimeToStr(char* str, size_t size, time_t time) {
+  snprintf(str, size, "%04d-%02d-%02d %02d:%02d:%02d",
+      year(time), month(time), day(time), hour(time), minute(time), second(time));
 }

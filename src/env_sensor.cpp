@@ -52,9 +52,13 @@ static void _updateSensorReading() {
     while (!mqtt.connect(sensorName)) {
         delay(100);
     }
-    mqtt.publish(temperatureTopic, String(temperature));
-    mqtt.publish(humidityTopic, String(humidity));
-    mqtt.publish(dewPointTopic, String(dewPoint));
+    char str[6];
+    snprintf(str, 6, "%.1f", temperature);
+    mqtt.publish(temperatureTopic, str);
+    snprintf(str, 6, "%.1f", humidity);
+    mqtt.publish(humidityTopic, str);
+    snprintf(str, 6, "%.1f", dewPoint);
+    mqtt.publish(dewPointTopic, str);
 
     _set_characteristic_float(&ch_dehumidifier_relative_humidity, humidity, true);
     _set_characteristic_float(&ch_dew_point, dewPoint, true);

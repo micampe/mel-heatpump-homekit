@@ -27,8 +27,8 @@ extern char pf_buffer[PRINTF_BUFFER_LENGTH];
 #define SF(x) String(F(x))
 #define STR_RN SF("\r\n")
 // time conversion
-void eTimeToStr(String &str, long val, bool fullPrint = false);
-void utcTimeToStr(String &str, time_t time);
+void uptimeString(char* str, size_t size, long val);
+void utcTimeToStr(char* str, size_t size, time_t time);
 
 typedef bool (*logCallback)(String &cmd);
 

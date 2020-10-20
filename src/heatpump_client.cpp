@@ -109,7 +109,7 @@ void updateThermostatOperatingStatus(bool operating) {
     float current_temperature = ch_thermostat_current_temperature.value.float_value;
 
     uint8_t current_state = HOMEKIT_CURRENT_HEATING_COOLING_STATE_OFF;
-    String mode = "idle";
+    const char* mode = PSTR("idle");
     if (heatpump.getPowerSettingBool() && operating) {
         if (target_state == HOMEKIT_TARGET_HEATING_COOLING_STATE_HEAT) {
             current_state = HOMEKIT_CURRENT_HEATING_COOLING_STATE_HEAT;
@@ -132,13 +132,13 @@ void updateThermostatOperatingStatus(bool operating) {
     changed |= _set_characteristic_uint8(&ch_thermostat_current_heating_cooling_state, current_state, true);
 
     if (changed) {
-        MIE_LOG(" ⮕ HK therm %s temp %.1f", mode.c_str(), current_temperature);
+        MIE_LOG(" ⮕ HK therm %s temp %.1f", mode, current_temperature);
     }
 }
 
 void updateFanOperatingStatus(bool operating) {
     bool changed = false;
-    String status;
+    const char* status;
     if (heatpump.getPowerSettingBool() == false) {
         changed |= _set_characteristic_uint8(&ch_fan_current_state, FAN_CURRENT_STATE_INACTIVE, true);
         status = PSTR("inactive");
@@ -151,7 +151,7 @@ void updateFanOperatingStatus(bool operating) {
     }
 
     if (changed) {
-        MIE_LOG(" ⮕ HK fan %s", status.c_str());
+        MIE_LOG(" ⮕ HK fan %s", status);
     }
 }
 
