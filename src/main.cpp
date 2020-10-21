@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include <ArduinoOTA.h>
 #include <arduino_homekit_server.h>
 
 #include "debug.h"
@@ -32,8 +31,6 @@ void setup() {
     initWeb(hostname);
     initEnvironmentReporting(ssid);
 
-    MIE_LOG("Initializing OTA...");
-    ArduinoOTA.begin(false);
     initHomeKitServer(ssid, loop);
 
     if (!initHeatPump()) {
@@ -45,7 +42,6 @@ void setup() {
 
 void loop() {
     httpServer.handleClient();
-    ArduinoOTA.handle();
     arduino_homekit_loop();
     mqtt.loop();
     Debug.handle();

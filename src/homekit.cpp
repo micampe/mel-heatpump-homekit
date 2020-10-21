@@ -1,7 +1,6 @@
 #include "homekit.h"
 
 #include <Arduino.h>
-#include <ArduinoOTA.h>
 #include <Ticker.h>
 #include <arduino_homekit_server.h>
 #include <homekit/characteristics.h>

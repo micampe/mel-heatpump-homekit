@@ -1,6 +1,5 @@
 #include "wifi_manager.h"
 
-#include <ArduinoOTA.h>
 #include <DoubleResetDetect.h>
 #include <WiFiManager.h>
 #include <Ticker.h>
