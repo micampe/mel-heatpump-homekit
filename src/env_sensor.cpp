@@ -69,11 +69,11 @@ static void _updateSensorReading() {
 
     if (mqttIsConfigured() && mqttConnect()) {
         char str[6];
-        snprintf(str, 6, "%.1f", temperature);
+        snprintf(str, sizeof(str), "%.1f", temperature);
         mqtt.publish(settings.mqtt_temp, str);
-        snprintf(str, 6, "%.1f", humidity);
+        snprintf(str, sizeof(str), "%.1f", humidity);
         mqtt.publish(settings.mqtt_humidity, str);
-        snprintf(str, 6, "%.1f", dewPoint);
+        snprintf(str, sizeof(str), "%.1f", dewPoint);
         mqtt.publish(settings.mqtt_dew_point, str);
     }
 
