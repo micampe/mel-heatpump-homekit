@@ -10,9 +10,8 @@
 #include "debug.h"
 #include "accessory.h"
 #include "heatpump_client.h"
+#include "web.h"
 
-// FIXME: this should be configurable
-#define MQTT_SERVER "192.168.1.249"
 #define SAMPLE_INTERVAL 300
 
 // FIXME: name should be configurable
@@ -32,9 +31,27 @@ static Ticker ticker;
 static WiFiClient net;
 static MQTTClient mqtt;
 
-static char *temperatureTopic;
-static char *humidityTopic;
-static char *dewPointTopic;
+static bool mqttConnect() {
+    const int timeout = 3; // 30 ticks = 3000ms
+    int tick = 0;
+    while (!mqtt.connect(sensorName) && ++tick < timeout) {
+        delay(10);
+    }
+
+    if (tick < timeout) {
+        return true;
+    } else {
+        // FIXME: report this in the status page
+        MIE_LOG("MQTT connection failed");
+        return false;
+    }
+}
+
+static bool shouldPublishMqtt() {
+    return strlen(settings.mqtt_server) 
+            && strlen(settings.mqtt_temp)
+            && strlen(settings.mqtt_humidity);
+}
 
 static void _updateSensorReading() {
     sensors_event_t temperatureEvent;
@@ -46,19 +63,15 @@ static void _updateSensorReading() {
     float humidity = humidityEvent.relative_humidity;
     float dewPoint = temperature - ((100 - humidity) / 5);
 
-    // MIE_LOG(" ⮕ HK %.1fºC %.1f%% RH %.1fºC DP", temperature, humidity, dewPoint);
-
-    // looks like I need this workaround?
-    while (!mqtt.connect(sensorName)) {
-        delay(100);
-    }
+    if (shouldPublishMqtt() && mqttConnect()) {
     char str[6];
     snprintf(str, 6, "%.1f", temperature);
-    mqtt.publish(temperatureTopic, str);
+        mqtt.publish(settings.mqtt_temp, str);
     snprintf(str, 6, "%.1f", humidity);
-    mqtt.publish(humidityTopic, str);
+        mqtt.publish(settings.mqtt_humidity, str);
     snprintf(str, 6, "%.1f", dewPoint);
-    mqtt.publish(dewPointTopic, str);
+        mqtt.publish(settings.mqtt_dew_point, str);
+    }
 
     _set_characteristic_float(&ch_dehumidifier_relative_humidity, humidity, true);
     _set_characteristic_float(&ch_dew_point, dewPoint, true);
@@ -70,10 +83,6 @@ static void _updateSensorReading() {
 void initEnvironmentReporting(const char* ssid) {
     sensorName = ssid;
 
-    asprintf(&temperatureTopic, "home/sensors/%s/temperature", sensorName);
-    asprintf(&humidityTopic, "home/sensors/%s/humidity", sensorName);
-    asprintf(&dewPointTopic, "home/sensors/%s/dewPoint", sensorName);
-
     sensors_event_t temperatureEvent;
     sensors_event_t humidityEvent;
 
@@ -84,8 +93,6 @@ void initEnvironmentReporting(const char* ssid) {
                 Adafruit_BME280::SAMPLING_X1,
                 Adafruit_BME280::FILTER_OFF,
                 Adafruit_BME280::STANDBY_MS_1000);
-        // FIXME: this should be configurable
-        bme.setTemperatureCompensation(-5);
 
         temperatureSensor = bme.getTemperatureSensor();
         humiditySensor = bme.getHumiditySensor();
@@ -106,7 +113,9 @@ void initEnvironmentReporting(const char* ssid) {
         }
     } else {
         dht.begin();
-        delay(1000);
+        sensor_t sensor;
+        dhtTemperature.getSensor(&sensor);
+        delay(sensor.min_delay / 1000);
 
         dhtTemperature.getEvent(&temperatureEvent);
         dhtHumidity.getEvent(&humidityEvent);
@@ -125,19 +134,18 @@ void initEnvironmentReporting(const char* ssid) {
     }
 
     if (temperatureSensor && humiditySensor) {
-        MIE_LOG("Starting environment sensor reporting");
-
         temperatureSensor->printSensorDetails();
         humiditySensor->printSensorDetails();
 
-        Serial.print("Connecting to MQTT broker...");
-        mqtt.begin(MQTT_SERVER, net);
-        delay(500);
-        while (!mqtt.connect(sensorName)) {
-            Serial.print(".");
-            delay(500);
+        if (shouldPublishMqtt()) {
+            Serial.println("Connecting to MQTT broker...");
+            MIE_LOG("Connecting to MQTT broker...");
+            mqtt.begin(settings.mqtt_server, settings.mqtt_port, net);
+            mqttConnect();
+        } else {
+            Serial.println("MQTT reporting not configured");
+            MIE_LOG("MQTT reporting not configured");
         }
-        Serial.println();
 
         _updateSensorReading();
         ticker.attach_scheduled(SAMPLE_INTERVAL, _updateSensorReading);

@@ -17,6 +17,9 @@
 
 #define CONFIG_FILE "/config.json"
 
+Settings settings;
+#define JSON_CAPACITY JSON_OBJECT_SIZE(4) + sizeof(Settings)
+
 ESP8266WebServer httpServer(80);
 ESP8266HTTPUpdateServer updateServer;
 
@@ -42,14 +45,35 @@ void uptimeString(char* str, int size) {
     }
 }
 
-void initWeb(const char* hostname) {
-    updateServer.setup(&httpServer, "/_update");
+void loadSettings() {
+    File config = LittleFS.open(CONFIG_FILE, "r");
+    StaticJsonDocument<JSON_CAPACITY> doc;
+    DeserializationError error = deserializeJson(doc, config);
+    if (error) {
+        MIE_LOG("Error loading coonfiguration file");
+    } else {
+        settings.mqtt_port = doc["mqtt_port"] | 1883;
+        strlcpy(settings.mqtt_server, doc["mqtt_server"] | "", sizeof(settings.mqtt_server));
+        strlcpy(settings.mqtt_temp, doc["mqtt_temp"] | "", sizeof(settings.mqtt_temp));
+        strlcpy(settings.mqtt_humidity, doc["mqtt_hum"] | "", sizeof(settings.mqtt_humidity));
+    }
+    config.close();
+}
 
+void initSettings() {
     LittleFS.begin();
     if (!LittleFS.exists(CONFIG_FILE)) {
         File config = LittleFS.open(CONFIG_FILE, "w");
         config.write("{}");
+        config.close();
     }
+}
+
+void initWeb(const char* hostname) {
+    initSettings();
+    loadSettings();
+
+    updateServer.setup(&httpServer, "/_update");
 
     httpServer.on("/", HTTP_GET, []() {
         char heap[7];
@@ -69,14 +93,15 @@ void initWeb(const char* hostname) {
 
     httpServer.on("/_settings", HTTP_GET, []() {
         File config = LittleFS.open(CONFIG_FILE, "r");
-        char bytes[config.size()];
+        char bytes[config.size() + 1];
         config.readBytes(bytes, config.size());
+        bytes[config.size()] = '\0';
         httpServer.send(200, mimeTable[json].mimeType, bytes);
     });
 
     httpServer.on("/_settings", HTTP_POST, []() {
         File config = LittleFS.open(CONFIG_FILE, "r");
-        StaticJsonDocument<300> doc;
+        StaticJsonDocument<JSON_CAPACITY> doc;
         deserializeJson(doc, config);
         config.close();
 
@@ -94,11 +119,12 @@ void initWeb(const char* hostname) {
 
         config = LittleFS.open(CONFIG_FILE, "w");
         serializeJson(doc, config);
-        config.close();
 
         size_t size = measureJson(doc);
         char response[size];
         serializeJsonPretty(doc, response, size);
+        config.close();
+
         httpServer.send(200, mimeTable[json].mimeType, response);
         // delay(1000);
         // ESP.restart();
