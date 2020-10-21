@@ -10,6 +10,7 @@
 #include <ArduinoJson.h>
 
 #include "debug.h"
+#include "env_sensor.h"
 #include "heatpump_client.h"
 
 // CLI update:
@@ -78,12 +79,36 @@ void initWeb(const char* hostname) {
     httpServer.on("/", HTTP_GET, []() {
         char heap[7];
         snprintf(heap, 7, "%d.%03d", ESP.getFreeHeap() / 1000, ESP.getFreeHeap() % 1000);
+
         char uptime[20];
         uptimeString(uptime, 20);
+
+        char mqtt_status[30];
+        if (!mqttIsConfigured()) {
+            strlcpy(mqtt_status, "not configured", sizeof(mqtt_status));
+        } else if (mqtt.lastError() == LWMQTT_SUCCESS) {
+            if (strlen(env_sensor_status) > 0) {
+                strlcpy(mqtt_status, "connected", sizeof(mqtt_status));
+            } else {
+                strlcpy(mqtt_status, "not connected", sizeof(mqtt_status));
+            }
+        } else {
+            snprintf(mqtt_status, sizeof(mqtt_status), "connection error: %d", mqtt.lastError());
+        }
+
+        char homekit_status[20] = "waiting for pairing";
+        homekit_server_t *homekit = arduino_homekit_get_running_server();
+        if (homekit->paired) {
+            int clients = arduino_homekit_connected_clients_count();
+            snprintf(homekit_status, sizeof(homekit_status), "paired, %d client%s", clients, clients == 1 ? "" : "s");
+        }
 
         String response = String(index_html);
         response.replace("__TITLE__", WiFi.hostname());
         response.replace("__HEAT_PUMP_STATUS__", heatpump.isConnected() ? "connected" : "not connected");
+        response.replace("__HOMEKIT_STATUS__", homekit_status);
+        response.replace("__ENV_SENSOR_STATUS__", strlen(env_sensor_status) ? env_sensor_status : "not connected");
+        response.replace("__MQTT_STATUS__", mqtt_status);
         response.replace("__UPTIME__", uptime);
         response.replace("__HEAP__", String(heap));
         response.replace("__FIRMWARE_VERSION__", GIT_DESCRIBE);
@@ -126,8 +151,8 @@ void initWeb(const char* hostname) {
         config.close();
 
         httpServer.send(200, mimeTable[json].mimeType, response);
-        // delay(1000);
-        // ESP.restart();
+        delay(1000);
+        ESP.restart();
     });
 
     httpServer.on("/_reboot", HTTP_POST, []() {

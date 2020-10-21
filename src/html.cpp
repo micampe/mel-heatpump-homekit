@@ -127,6 +127,7 @@ function _(s) {
 
 function rebootingTimer(button, msg) {
     let counter = 30
+    button.disabled = true
     setInterval(function() {
         if (counter >= 0) {
             button.innerHTML = msg + counter + "s"
@@ -166,7 +167,7 @@ function reboot(e) {
     let request = new XMLHttpRequest()
     request.onload = function (e) {
         if (request.status == 200) {
-          rebootingTimer(button, 'Rebooting… ')
+            rebootingTimer(button, 'Rebooting… ')
         }
     }
     request.open('POST', form.action)
@@ -205,9 +206,9 @@ function saveSettings(e) {
     let button = this.querySelector('button')
     let request = new XMLHttpRequest()
     request.onload = function(e) {
-        let orig = button.innerHTML
-        button.innerHTML = 'Saved'
-        setTimeout(function() { button.innerHTML = orig }, 2000)
+        if (request.status == 200) {
+            rebootingTimer(button, 'Saved, rebooting…')
+        }
     }
     request.open('POST', '/_settings')
     request.send(formData)
@@ -218,7 +219,10 @@ function loadSettings() {
     request.onload = function (ev) {
         let json = JSON.parse(request.response)
         for (let key in json) {
-            _('[name=' + key + ']')[0].value = json[key]
+            let el = _('[name=' + key + ']')[0];
+            if (el) {
+                el.value = json[key]
+            }
         }
     }
     request.open('GET', '/_settings')
@@ -246,6 +250,9 @@ window.onload = function () {
     <h1>__TITLE__</h1>
     <dl>
     <dt>Heat Pump:</dt><dd>__HEAT_PUMP_STATUS__</dd>
+    <dt>HomeKit:</dt><dd>__HOMEKIT_STATUS__</dd>
+    <dt>Env Sensor:</dt><dd>__ENV_SENSOR_STATUS__</dd>
+    <dt>MQTT:</dt><dd>__MQTT_STATUS__</dd>
     <dt>Uptime:</dt><dd>__UPTIME__</dd>
     <dt>Heap:</dt><dd>__HEAP__B</dd>
     <dt>Firmware:</dt><dd>__FIRMWARE_VERSION__</dd>
@@ -260,8 +267,8 @@ window.onload = function () {
       <input placeholder='Temperature reporting topic' name='mqtt_temp' type='text' maxlength=80>
       <input placeholder='Relative humidity reporting topic' name='mqtt_hum' type='text' maxlength=80>
       <span class='caption'>If these topics are set, temperature and relative
-      humidity readings will be periodically posted to mqtt. &mdash; This feature requires a BME280
-      or DHT22 temperature and humidity sensor connected to the ESP8266.</p>
+        humidity readings will be periodically posted to mqtt. &mdash; This
+        feature requires an external sensor.</p>
   <!--
       <p><label for='mqtt_remote_temp'>Remote Temperature</label>
       <input placeholder='Remote temperature topic' name='mqtt_remote_temp' type='text' maxlength=80>

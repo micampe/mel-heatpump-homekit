@@ -2,7 +2,6 @@
 #include <Adafruit_Sensor.h>
 #include <DHT.h>
 #include <DHT_U.h>
-#include <MQTTClient.h>
 #include <Ticker.h>
 #include <Wire.h>
 
@@ -28,8 +27,9 @@ static Adafruit_Sensor *humiditySensor = nullptr;
 
 static Ticker ticker;
 
-static WiFiClient net;
-static MQTTClient mqtt;
+WiFiClient net;
+MQTTClient mqtt;
+char env_sensor_status[30] = {0};
 
 static bool mqttConnect() {
     const int timeout = 3; // 30 ticks = 3000ms
@@ -47,7 +47,7 @@ static bool mqttConnect() {
     }
 }
 
-static bool shouldPublishMqtt() {
+bool mqttIsConfigured() {
     return strlen(settings.mqtt_server) 
             && strlen(settings.mqtt_temp)
             && strlen(settings.mqtt_humidity);
@@ -63,13 +63,17 @@ static void _updateSensorReading() {
     float humidity = humidityEvent.relative_humidity;
     float dewPoint = temperature - ((100 - humidity) / 5);
 
-    if (shouldPublishMqtt() && mqttConnect()) {
-    char str[6];
-    snprintf(str, 6, "%.1f", temperature);
+    sensor_t sensor;
+    temperatureSensor->getSensor(&sensor);
+    snprintf(env_sensor_status, sizeof(env_sensor_status), "%s %.1fºC %.1f%%RH", sensor.name, temperature, humidity);
+
+    if (mqttIsConfigured() && mqttConnect()) {
+        char str[6];
+        snprintf(str, 6, "%.1f", temperature);
         mqtt.publish(settings.mqtt_temp, str);
-    snprintf(str, 6, "%.1f", humidity);
+        snprintf(str, 6, "%.1f", humidity);
         mqtt.publish(settings.mqtt_humidity, str);
-    snprintf(str, 6, "%.1f", dewPoint);
+        snprintf(str, 6, "%.1f", dewPoint);
         mqtt.publish(settings.mqtt_dew_point, str);
     }
 
@@ -137,7 +141,7 @@ void initEnvironmentReporting(const char* ssid) {
         temperatureSensor->printSensorDetails();
         humiditySensor->printSensorDetails();
 
-        if (shouldPublishMqtt()) {
+        if (mqttIsConfigured()) {
             Serial.println("Connecting to MQTT broker...");
             MIE_LOG("Connecting to MQTT broker...");
             mqtt.begin(settings.mqtt_server, settings.mqtt_port, net);

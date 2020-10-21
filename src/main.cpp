@@ -30,11 +30,11 @@ void setup() {
     initNTPClock();
     initRemoteDebug(ssid);
     initWeb(hostname);
+    initEnvironmentReporting(ssid);
 
     MIE_LOG("Initializing OTA...");
     ArduinoOTA.begin(false);
     initHomeKitServer(ssid, loop);
-    initEnvironmentReporting(ssid);
 
     if (!initHeatPump()) {
         led_status_signal(&status_led_error);
@@ -47,5 +47,6 @@ void loop() {
     httpServer.handleClient();
     ArduinoOTA.handle();
     arduino_homekit_loop();
+    mqtt.loop();
     Debug.handle();
 }
