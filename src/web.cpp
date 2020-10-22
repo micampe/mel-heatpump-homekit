@@ -78,8 +78,8 @@ void initWeb(const char* hostname) {
     updateServer.setup(&httpServer, "/_update");
 
     httpServer.on("/", HTTP_GET, []() {
-        char heap[7];
-        snprintf(heap, 7, "%d.%03d", ESP.getFreeHeap() / 1000, ESP.getFreeHeap() % 1000);
+        char heap[15];
+        snprintf(heap, sizeof(heap), "%d.%03dB / %d%%", ESP.getFreeHeap() / 1000, ESP.getFreeHeap() % 1000, ESP.getHeapFragmentation());
 
         char uptime[20];
         uptimeString(uptime, 20);
@@ -105,16 +105,16 @@ void initWeb(const char* hostname) {
         }
 
         String response = String(index_html);
-        response.replace("__TITLE__", WiFi.hostname());
-        response.replace("__HEAT_PUMP_STATUS__", heatpump.isConnected() ? "connected" : "not connected");
-        response.replace("__HOMEKIT_STATUS__", homekit_status);
-        response.replace("__ENV_SENSOR_STATUS__", strlen(env_sensor_status) ? env_sensor_status : "not connected");
-        response.replace("__MQTT_STATUS__", mqtt_status);
-        response.replace("__UPTIME__", uptime);
-        response.replace("__HEAP__", String(heap));
-        response.replace("__FIRMWARE_VERSION__", GIT_DESCRIBE);
+            response.replace("__TITLE__", WiFi.hostname());
+            response.replace("__HEAT_PUMP_STATUS__", heatpump.isConnected() ? "connected" : "not connected");
+            response.replace("__HOMEKIT_STATUS__", homekit_status);
+            response.replace("__ENV_SENSOR_STATUS__", strlen(env_sensor_status) ? env_sensor_status : "not connected");
+            response.replace("__MQTT_STATUS__", mqtt_status);
+            response.replace("__UPTIME__", uptime);
+            response.replace("__HEAP__", String(heap));
+            response.replace("__FIRMWARE_VERSION__", GIT_DESCRIBE);
 
-        httpServer.send(200, mimeTable[html].mimeType, response);
+            httpServer.send(200, mimeTable[html].mimeType, response);
     });
 
     httpServer.on("/_settings", HTTP_GET, []() {

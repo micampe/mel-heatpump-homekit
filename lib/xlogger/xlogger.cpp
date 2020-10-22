@@ -107,7 +107,9 @@ bool xLogger::ExecCommand(const String &cmd) {
   }
 
   if (cmd == "mem") {
-    println(SF("Free Heap: ") + String(ESP.getFreeHeap()));
+    char heap[22];
+    snprintf(heap, sizeof(heap), "Heap: %d.%03dB / %d%%", ESP.getFreeHeap() / 1000, ESP.getFreeHeap() % 1000, ESP.getHeapFragmentation());
+    println(heap);
     return true;
   }
 
@@ -256,7 +258,9 @@ void xLogger::showInitMessage() {
   msg += SF("\r\nHost: ") + hostName;
   msg += SF("\r\nIP  : ") + WiFi.localIP().toString();
   msg += SF("\r\nMac : ") + WiFi.macAddress();
-  msg += SF("\r\nHeap: ") + String(ESP.getFreeHeap());
+  char heap[22];
+  snprintf(heap, sizeof(heap), "Heap: %d.%03dB / %d%%", ESP.getFreeHeap() / 1000, ESP.getFreeHeap() % 1000, ESP.getHeapFragmentation());
+  msg += SF("\r\n") + heap;
 
   char str[20];
   utcTimeToStr(str, 20, lastBootTime);

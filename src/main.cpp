@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <Ticker.h>
 #include <arduino_homekit_server.h>
 
 #include "debug.h"
@@ -16,11 +17,15 @@
 char ssid[25];
 char hostname[25];
 
+Ticker mem;
+
 void setup() {
     Serial.begin(115200);
     Serial.println();
 
     led_status_init(LED_BUILTIN, false);
+
+    mem.attach(3600, [] { Debug.ExecCommand("mem"); });
 
     sprintf(ssid, NAME_PREFIX "%06x", ESP.getChipId());
     sprintf(hostname, HOSTNAME_PREFIX "%06x", ESP.getChipId());
