@@ -28,7 +28,11 @@ using namespace mime;
 
 extern const char* index_html;
 
-void uptimeString(char* str, int size) {
+static void heapStatus(char* str, size_t size) {
+    snprintf(str, size, "%d.%03dB / %d%%", ESP.getFreeHeap() / 1000, ESP.getFreeHeap() % 1000, ESP.getHeapFragmentation());
+}
+
+static void uptimeString(char* str, int size) {
     long val = millis() / 1000;
     int days = elapsedDays(val);
     int hours = numberOfHours(val);
@@ -43,6 +47,30 @@ void uptimeString(char* str, int size) {
         snprintf(str, size, "%dm %ds", minutes, seconds);
     } else {
         snprintf(str, size, "%ds", seconds);
+    }
+}
+
+static void mqttStatus(char* str, size_t size) {
+    if (!mqttIsConfigured()) {
+        strlcpy(str, "not configured", size);
+    } else if (mqtt.lastError() == LWMQTT_SUCCESS) {
+        if (strlen(env_sensor_status) > 0) {
+            strlcpy(str, "connected", size);
+        } else {
+            strlcpy(str, "not connected", size);
+        }
+    } else {
+        snprintf(str, size, "connection error: %d", mqtt.lastError());
+    }
+}
+
+static void homeKitStatus(char* str, size_t size) {
+    homekit_server_t *homekit = arduino_homekit_get_running_server();
+    if (homekit->paired) {
+        int clients = arduino_homekit_connected_clients_count();
+        snprintf(str, size, "paired, %d client%s", clients, clients == 1 ? "" : "s");
+    } else {
+        snprintf(str, size, "waiting for pairing");
     }
 }
 
@@ -78,50 +106,14 @@ void initWeb(const char* hostname) {
     updateServer.setup(&httpServer, "/_update");
 
     httpServer.on("/", HTTP_GET, []() {
-        char heap[15];
-        snprintf(heap, sizeof(heap), "%d.%03dB / %d%%", ESP.getFreeHeap() / 1000, ESP.getFreeHeap() % 1000, ESP.getHeapFragmentation());
-
-        char uptime[20];
-        uptimeString(uptime, 20);
-
-        char mqtt_status[30];
-        if (!mqttIsConfigured()) {
-            strlcpy(mqtt_status, "not configured", sizeof(mqtt_status));
-        } else if (mqtt.lastError() == LWMQTT_SUCCESS) {
-            if (strlen(env_sensor_status) > 0) {
-                strlcpy(mqtt_status, "connected", sizeof(mqtt_status));
-            } else {
-                strlcpy(mqtt_status, "not connected", sizeof(mqtt_status));
-            }
-        } else {
-            snprintf(mqtt_status, sizeof(mqtt_status), "connection error: %d", mqtt.lastError());
-        }
-
-        char homekit_status[20] = "waiting for pairing";
-        homekit_server_t *homekit = arduino_homekit_get_running_server();
-        if (homekit->paired) {
-            int clients = arduino_homekit_connected_clients_count();
-            snprintf(homekit_status, sizeof(homekit_status), "paired, %d client%s", clients, clients == 1 ? "" : "s");
-        }
-
-        String response = String(index_html);
-            response.replace("__TITLE__", WiFi.hostname());
-            response.replace("__HEAT_PUMP_STATUS__", heatpump.isConnected() ? "connected" : "not connected");
-            response.replace("__HOMEKIT_STATUS__", homekit_status);
-            response.replace("__ENV_SENSOR_STATUS__", strlen(env_sensor_status) ? env_sensor_status : "not connected");
-            response.replace("__MQTT_STATUS__", mqtt_status);
-            response.replace("__UPTIME__", uptime);
-            response.replace("__HEAP__", String(heap));
-            response.replace("__FIRMWARE_VERSION__", GIT_DESCRIBE);
-
-            httpServer.send(200, mimeTable[html].mimeType, response);
+        httpServer.send(200, mimeTable[html].mimeType, index_html);
     });
 
     httpServer.on("/_settings", HTTP_GET, []() {
         File config = LittleFS.open(CONFIG_FILE, "r");
-        char bytes[config.size() + 1];
-        config.readBytes(bytes, config.size());
-        bytes[config.size()] = '\0';
+        size_t content_size = config.size();
+        char bytes[content_size];
+        config.readBytes(bytes, content_size);
         httpServer.send(200, mimeTable[json].mimeType, bytes);
     });
 
@@ -154,6 +146,32 @@ void initWeb(const char* hostname) {
         httpServer.send(200, mimeTable[json].mimeType, response);
         delay(1000);
         ESP.restart();
+    });
+
+    httpServer.on("/_status", HTTP_GET, []() {
+        char heap_status[15];
+        heapStatus(heap_status, sizeof(heap_status));
+        char uptime[20];
+        uptimeString(uptime, sizeof(uptime));
+        char mqtt_status[30];
+        mqttStatus(mqtt_status, sizeof(mqtt_status));
+        char homekit_status[20];
+        homeKitStatus(homekit_status, sizeof(homekit_status));
+
+        StaticJsonDocument<500> doc;
+        doc["title"] = WiFi.hostname();
+        doc["heatpump"] = heatpump.isConnected() ? "connected" : "not connected";
+        doc["homekit"] = homekit_status;
+        doc["env"] = strlen(env_sensor_status) ? env_sensor_status : "not connected";
+        doc["mqtt"] = mqtt_status;
+        doc["uptime"] = uptime;
+        doc["heap"] = heap_status;
+        doc["firmware"] = GIT_DESCRIBE;
+
+        size_t doc_size = measureJson(doc);
+        char response[doc_size + 1];
+        serializeJson(doc, response, sizeof(response));
+        httpServer.send(200, mimeTable[json].mimeType, response);
     });
 
     httpServer.on("/_reboot", HTTP_POST, []() {

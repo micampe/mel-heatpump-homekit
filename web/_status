@@ -1,0 +1,10 @@
+{
+  "title": "Test Heat Pump",
+  "heatpump": "connected",
+  "homekit": "paired, 3 clients",
+  "env": "BME280 23.2ºC 63.4%RH",
+  "mqtt": "connected",
+  "uptime": "1d 23h 7m 39s",
+  "heap": "19.824B / 4%",
+  "firmware": "v0.6"
+}

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang='en'>
 <head>
-<title>__TITLE__</title>
+<title>MEL Heat Pump</title>
 <meta charset='utf-8'>
 <meta name='viewport' content='width=device-width,initial-scale=1'/>
 <style>
@@ -225,6 +225,22 @@ function loadSettings() {
     request.send()
 }
 
+function loadStatus() {
+    let request = new XMLHttpRequest()
+    request.onload = function (ev) {
+        let json = JSON.parse(request.response)
+        for (let key in json) {
+            let el = _('#status_' + key);
+            if (el) {
+                el.innerHTML = json[key]
+            }
+        }
+        document.title = json['title']
+    }
+    request.open('GET', '/_status')
+    request.send()
+}
+
 window.onload = function () {
     _('#firmware_file').onchange = function (e) {
         _('#upload_button').disabled = this.files.lenght === 0
@@ -240,18 +256,19 @@ window.onload = function () {
     _('#settings_form').onsubmit = saveSettings
 
     loadSettings()
+    loadStatus()
 }
 </script>
   <div class='wrap'>
-    <h1>__TITLE__</h1>
+    <h1 id='status_title'>MEL Heat Pump</h1>
     <dl>
-    <dt>Heat Pump:</dt><dd>__HEAT_PUMP_STATUS__</dd>
-    <dt>HomeKit:</dt><dd>__HOMEKIT_STATUS__</dd>
-    <dt>Env Sensor:</dt><dd>__ENV_SENSOR_STATUS__</dd>
-    <dt>MQTT:</dt><dd>__MQTT_STATUS__</dd>
-    <dt>Uptime:</dt><dd>__UPTIME__</dd>
-    <dt>Heap:</dt><dd>__HEAP__</dd>
-    <dt>Firmware:</dt><dd>__FIRMWARE_VERSION__</dd>
+    <dt>HomeKit:</dt><dd id='status_homekit'></dd>
+    <dt>Heat Pump:</dt><dd id='status_heatpump'></dd>
+    <dt>Env Sensor:</dt><dd id='status_env'></dd>
+    <dt>MQTT:</dt><dd id='status_mqtt'></dd>
+    <dt>Uptime:</dt><dd id='status_uptime'></dd>
+    <dt>Heap:</dt><dd id='status_heap'></dd>
+    <dt>Firmware:</dt><dd id='status_firmware'></dd>
     </dl>
     <h2>Settings</h2>
     <form id='settings_form' action='/_settings' method='post'>
