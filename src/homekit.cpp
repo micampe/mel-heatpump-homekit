@@ -1,6 +1,7 @@
 #include "homekit.h"
 
 #include <Arduino.h>
+#include <ESP8266mDNS.h>
 #include <Ticker.h>
 #include <arduino_homekit_server.h>
 #include <homekit/characteristics.h>
@@ -13,6 +14,9 @@
 
 static char serial[7];
 static Ticker updateTicker;
+static Ticker keepAliveTicker;
+
+#define ANNOUNCE_INTERVAL 60
 
 // throttle updates to the heat pump to try to send more settings at once and
 // avoid conflicts when changing multiple settings from HomeKit
@@ -74,6 +78,7 @@ heatpumpSettings _settingsForCurrentState() {
 void scheduleHeatPumpUpdate() {
     updateTicker.once_ms_scheduled(UPDATE_INTERVAL, [] {
         unsigned long start = millis();
+
         heatpumpSettings settings = _settingsForCurrentState();
         heatpump.setSettings(settings);
         MIE_LOG("⮕ HP updating power %s mode %s target %.1f fan %s v vane %s h vane %s",
@@ -84,6 +89,7 @@ void scheduleHeatPumpUpdate() {
                 settings.vane,
                 settings.wideVane);
         heatpump.update();
+
         (void)start;
         MIE_LOG("HP update %dms", millis() - start);
     });
@@ -235,4 +241,10 @@ void initHomeKitServer(const char *ssid, std::function<void()> loop) {
     ch_fan_rotation_speed.setter = set_fan_speed;
     ch_fan_target_state.setter = set_fan_auto_mode;
     ch_fan_swing_mode.setter = set_fan_swing;
+
+    // Keep HomeKit connection alive
+    // https://github.com/Mixiaoxiao/Arduino-HomeKit-ESP8266/issues/9
+    keepAliveTicker.attach_scheduled(ANNOUNCE_INTERVAL, []() {
+        MDNS.announce();
+    });
 }
