@@ -3,6 +3,7 @@
 xLogger Debug;
 
 void initRemoteDebug(const char ssid[]) {
+#ifdef MIE_DEBUG
     Serial.println("Initializing remote debug...");
 
     Debug.begin(ssid);
@@ -10,4 +11,5 @@ void initRemoteDebug(const char ssid[]) {
     Debug.setShowDebugLevel(false);
     Debug.setTimeFormat(ltUTCTime);
     MIE_LOG("%s connected", ssid);
+#endif
 }

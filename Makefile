@@ -9,8 +9,12 @@ upload-serial:
 upload-ota:
 	platformio --caller vim run --silent --environment ota --target upload
 
-dist:	all
-	cp .pio/build/serial/firmware.bin bin/mel_heatpump_$(GIT_DESCRIBE).bin
+upload-release:
+	platformio --caller vim run --silent --environment release --target upload
+
+dist:
+	platformio --caller vim run --silent --environment release
+	cp .pio/build/release/firmware.bin bin/mel_heatpump_$(GIT_DESCRIBE).bin
 	gzip --force bin/mel_heatpump_$(GIT_DESCRIBE).bin
 
 clean:

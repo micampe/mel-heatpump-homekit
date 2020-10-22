@@ -132,6 +132,7 @@ void updateThermostatOperatingStatus(bool operating) {
     changed |= _set_characteristic_uint8(&ch_thermostat_current_heating_cooling_state, current_state, true);
 
     if (changed) {
+        (void)mode;
         MIE_LOG(" ⮕ HK therm %s temp %.1f", mode, current_temperature);
     }
 }
@@ -151,6 +152,7 @@ void updateFanOperatingStatus(bool operating) {
     }
 
     if (changed) {
+        (void)status;
         MIE_LOG(" ⮕ HK fan %s", status);
     }
 }

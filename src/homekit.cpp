@@ -84,7 +84,8 @@ void scheduleHeatPumpUpdate() {
                 settings.vane,
                 settings.wideVane);
         heatpump.update();
-        MIE_LOG("HP update %dms", millis() -start);
+        (void)start;
+        MIE_LOG("HP update %dms", millis() - start);
     });
 }
 
