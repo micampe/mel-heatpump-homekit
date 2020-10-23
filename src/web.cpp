@@ -19,7 +19,7 @@
 #define CONFIG_FILE "/config.json"
 
 Settings settings;
-#define JSON_CAPACITY JSON_OBJECT_SIZE(4) + sizeof(Settings)
+#define JSON_CAPACITY JSON_OBJECT_SIZE(5) + sizeof(Settings)
 
 ESP8266WebServer httpServer(80);
 ESP8266HTTPUpdateServer updateServer;
@@ -109,8 +109,9 @@ static void initSettings() {
 static void web_get_settings() {
     File config = LittleFS.open(CONFIG_FILE, "r");
     size_t content_size = config.size();
-    char bytes[content_size];
+    char bytes[content_size + 1];
     config.readBytes(bytes, content_size);
+    bytes[content_size] = '\0';
     httpServer.send(200, mimeTable[json].mimeType, bytes);
 }
 
@@ -133,9 +134,9 @@ static void web_post_settings() {
     }
 
     config = LittleFS.open(CONFIG_FILE, "w");
-    serializeJson(doc, config);
+    serializeJsonPretty(doc, config);
 
-    size_t size = measureJson(doc);
+    size_t size = measureJsonPretty(doc);
     char response[size];
     serializeJsonPretty(doc, response, size);
     config.close();
@@ -165,9 +166,9 @@ static void web_get_status() {
     doc["heap"] = heap_status;
     doc["firmware"] = GIT_DESCRIBE;
 
-    size_t doc_size = measureJson(doc);
+    size_t doc_size = measureJsonPretty(doc);
     char response[doc_size + 1];
-    serializeJson(doc, response, sizeof(response));
+    serializeJsonPretty(doc, response, sizeof(response));
     httpServer.send(200, mimeTable[json].mimeType, response);
 }
 
