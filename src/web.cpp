@@ -28,17 +28,22 @@ using namespace mime;
 
 extern const char* index_html;
 
-static void heapStatus(char* str, size_t size) {
-    snprintf(str, size, "%d.%03dB / %d%%", ESP.getFreeHeap() / 1000, ESP.getFreeHeap() % 1000, ESP.getHeapFragmentation());
+template <size_t SIZE>
+static void heapStatus(char (&str)[SIZE]) {
+    snprintf(str, sizeof(str), "%d.%03dB / %d%% / %d.%03dB",
+            ESP.getFreeHeap() / 1000, ESP.getFreeHeap() % 1000,
+            ESP.getHeapFragmentation(),
+            ESP.getMaxFreeBlockSize() / 1000, ESP.getMaxFreeBlockSize() % 1000);
 }
 
-static void uptimeString(char* str, int size) {
+static void uptimeString(char (&str)[20]) {
     long val = millis() / 1000;
     int days = elapsedDays(val);
     int hours = numberOfHours(val);
     int minutes = numberOfMinutes(val);
     int seconds = numberOfSeconds(val);
 
+    size_t size = sizeof(str);
     if (days > 0) {
         snprintf(str, size, "%dd %dh %dm %ds", days, hours, minutes, seconds);
     } else if (hours > 0) {
@@ -50,7 +55,8 @@ static void uptimeString(char* str, int size) {
     }
 }
 
-static void mqttStatus(char* str, size_t size) {
+static void mqttStatus(char (&str)[22]) {
+    size_t size = sizeof(str);
     if (!mqttIsConfigured()) {
         strlcpy(str, "not configured", size);
     } else if (mqtt.lastError() == LWMQTT_SUCCESS) {
@@ -64,7 +70,8 @@ static void mqttStatus(char* str, size_t size) {
     }
 }
 
-static void homeKitStatus(char* str, size_t size) {
+static void homeKitStatus(char (&str)[20]) {
+    size_t size = sizeof(str);
     homekit_server_t *homekit = arduino_homekit_get_running_server();
     if (homekit->paired) {
         int clients = arduino_homekit_connected_clients_count();
@@ -139,14 +146,14 @@ static void web_post_settings() {
 }
 
 static void web_get_status() {
-    char heap_status[15];
-    heapStatus(heap_status, sizeof(heap_status));
+    char heap_status[25];
+    heapStatus(heap_status);
     char uptime[20];
-    uptimeString(uptime, sizeof(uptime));
-    char mqtt_status[30];
-    mqttStatus(mqtt_status, sizeof(mqtt_status));
+    uptimeString(uptime);
+    char mqtt_status[22];
+    mqttStatus(mqtt_status);
     char homekit_status[20];
-    homeKitStatus(homekit_status, sizeof(homekit_status));
+    homeKitStatus(homekit_status);
 
     StaticJsonDocument<500> doc;
     doc["title"] = WiFi.hostname();
