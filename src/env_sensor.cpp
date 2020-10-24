@@ -11,7 +11,7 @@
 #include "heatpump_client.h"
 #include "web.h"
 
-#define SAMPLE_INTERVAL 300
+#define SAMPLE_INTERVAL 10
 
 // FIXME: name should be configurable
 const char *sensorName;
