@@ -19,7 +19,7 @@
 #define CONFIG_FILE "/config.json"
 
 Settings settings;
-#define JSON_CAPACITY JSON_OBJECT_SIZE(5) + sizeof(Settings)
+#define JSON_CAPACITY 512
 
 ESP8266WebServer httpServer(80);
 ESP8266HTTPUpdateServer updateServer;
@@ -137,8 +137,8 @@ static void web_post_settings() {
     serializeJsonPretty(doc, config);
 
     size_t size = measureJsonPretty(doc);
-    char response[size];
-    serializeJsonPretty(doc, response, size);
+    char response[size + 1];
+    serializeJsonPretty(doc, response, sizeof(response));
     config.close();
 
     httpServer.send(200, mimeTable[json].mimeType, response);
@@ -156,7 +156,7 @@ static void web_get_status() {
     char homekit_status[20];
     homeKitStatus(homekit_status);
 
-    StaticJsonDocument<500> doc;
+    StaticJsonDocument<JSON_CAPACITY> doc;
     doc["title"] = WiFi.hostname();
     doc["heatpump"] = heatpump.isConnected() ? "connected" : "not connected";
     doc["homekit"] = homekit_status;
