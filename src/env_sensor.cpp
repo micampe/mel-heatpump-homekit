@@ -105,9 +105,6 @@ void initEnvironmentReporting(const char* ssid) {
         humiditySensor->getEvent(&humidityEvent);
 
         if (!isnan(temperatureEvent.temperature) && !isnan(humidityEvent.relative_humidity)) {
-            Serial.printf("Found BME280 sensor: %.1fºC %.1f%% RH\n",
-                    temperatureEvent.temperature,
-                    humidityEvent.relative_humidity);
             MIE_LOG("Found BME280 sensor: %.1fºC %.1f%% RH",
                     temperatureEvent.temperature,
                     humidityEvent.relative_humidity);
@@ -125,9 +122,6 @@ void initEnvironmentReporting(const char* ssid) {
         dhtHumidity.getEvent(&humidityEvent);
 
         if (!isnan(temperatureEvent.temperature) && !isnan(humidityEvent.relative_humidity)) {
-            Serial.printf("Found DHT22 sensor: %.1fºC %.1f%% RH\n",
-                    temperatureEvent.temperature,
-                    humidityEvent.relative_humidity);
             MIE_LOG("Found DHT22 sensor: %.1fºC %.1f%% RH",
                     temperatureEvent.temperature,
                     humidityEvent.relative_humidity);
@@ -142,19 +136,16 @@ void initEnvironmentReporting(const char* ssid) {
         humiditySensor->printSensorDetails();
 
         if (mqttIsConfigured()) {
-            Serial.println("Connecting to MQTT broker...");
-            MIE_LOG("Connecting to MQTT broker...");
-            mqtt.begin(settings.mqtt_server, settings.mqtt_port, net);
+            MIE_LOG("Connecting to MQTT broker %s:%u...", settings.mqtt_server, settings.mqtt_port);
+            mqtt.begin(settings.mqtt_server, (int)settings.mqtt_port, net);
             mqttConnect();
         } else {
-            Serial.println("MQTT reporting not configured");
             MIE_LOG("MQTT reporting not configured");
         }
 
         _updateSensorReading();
         ticker.attach_scheduled(SAMPLE_INTERVAL, _updateSensorReading);
     } else {
-        Serial.println(F("No temperature and humidity sensors found"));
         MIE_LOG("No temperature and humidity sensors found");
     }
 }

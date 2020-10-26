@@ -24,6 +24,8 @@ void initRemoteDebug(const char ssid[]) {
     Debug.setProgramVersion((char *)GIT_DESCRIBE);
     Debug.setShowDebugLevel(false);
     Debug.setTimeFormat(ltUTCTime);
+    Debug.setSerial(&Serial);
+    Debug.enableSerial(true);
     MIE_LOG("%s connected", ssid);
 #endif
 

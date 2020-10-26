@@ -207,8 +207,8 @@ void statusChanged(heatpumpStatus status) {
 
 
 bool initHeatPump() {
-    Serial.println("Connecting to heat pump... no more serial logging");
-    MIE_LOG("Connecting to heat pump...");
+    MIE_LOG("Connecting to heat pump... disabling serial logging");
+    Debug.enableSerial(false);
 
     heatpump.setSettingsChangedCallback(settingsChanged);
     heatpump.setStatusChangedCallback(statusChanged);
@@ -233,9 +233,8 @@ bool initHeatPump() {
         return true;
     } else {
         Serial.begin(115200);
-        Serial.println();
-        Serial.println("Heat pump connection failed");
-        MIE_LOG("Heat pump connection failed");
+        Debug.enableSerial(true);
+        MIE_LOG("Heat pump connection failed, serial logging resumed");
         return false;
     }
 }
