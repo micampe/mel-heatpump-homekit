@@ -12,6 +12,7 @@
 #include "debug.h"
 #include "env_sensor.h"
 #include "heatpump_client.h"
+#include "mqtt.h"
 
 // CLI update:
 // curl -F "firmware=@<FILENAME>.bin" <ADDRESS>/_update
@@ -57,16 +58,14 @@ static void uptimeString(char (&str)[20]) {
 
 static void mqttStatus(char (&str)[22]) {
     size_t size = sizeof(str);
-    if (!mqttIsConfigured()) {
+    if (!mqtt_is_configured()) {
         strlcpy(str, "not configured", size);
-    } else if (mqtt.lastError() == LWMQTT_SUCCESS) {
-        if (strlen(env_sensor_status) > 0) {
-            strlcpy(str, "connected", size);
-        } else {
-            strlcpy(str, "not connected", size);
-        }
+    } else if (mqtt.state() == MQTT_CONNECTED) {
+        strlcpy(str, "connected", size);
+    } else if (mqtt.state() == MQTT_DISCONNECTED) {
+        strlcpy(str, "disconnected", size);
     } else {
-        snprintf(str, size, "connection error: %d", mqtt.lastError());
+        snprintf(str, size, "connection error: %d", mqtt.state());
     }
 }
 
@@ -88,7 +87,7 @@ static void loadSettings() {
     if (error) {
         MIE_LOG("Error loading coonfiguration file");
     } else {
-        int port = strtol(doc["mqtt_port"], nullptr, 10);
+        uint16_t port = strtol(doc["mqtt_port"], nullptr, 10);
         settings.mqtt_port = port > 0 ? port : 1883;
         strlcpy(settings.mqtt_server, doc["mqtt_server"] | "", sizeof(settings.mqtt_server));
         strlcpy(settings.mqtt_temp, doc["mqtt_temp"] | "", sizeof(settings.mqtt_temp));

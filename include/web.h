@@ -4,7 +4,7 @@
 
 struct Settings {
     char mqtt_server[32];
-    int mqtt_port;
+    uint16_t mqtt_port;
     char mqtt_temp[80];
     char mqtt_humidity[80];
     char mqtt_dew_point[80];

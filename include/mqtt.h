@@ -1,5 +1,9 @@
 #pragma once
 
-#include <MQTTClient.h>
+#include <PubSubClient.h>
 
-extern MQTTClient mqtt;
+extern PubSubClient mqtt;
+
+bool mqtt_is_configured();
+bool mqtt_init(const char* name);
+bool mqtt_connect();

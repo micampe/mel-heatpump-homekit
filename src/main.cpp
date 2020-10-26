@@ -3,10 +3,11 @@
 #include <arduino_homekit_server.h>
 
 #include "debug.h"
+#include "env_sensor.h"
 #include "heatpump_client.h"
 #include "homekit.h"
-#include "env_sensor.h"
 #include "led_status_patterns.h"
+#include "mqtt.h"
 #include "ntp_clock.h"
 #include "web.h"
 #include "wifi_manager.h"
@@ -14,10 +15,8 @@
 #define NAME_PREFIX "Heat Pump "
 #define HOSTNAME_PREFIX "heat-pump-"
 
-char ssid[25];
+char name[25];
 char hostname[25];
-
-Ticker mem;
 
 void setup() {
     Serial.begin(115200);
@@ -25,18 +24,17 @@ void setup() {
 
     led_status_init(LED_BUILTIN, false);
 
-    mem.attach(3600, [] { Debug.ExecCommand("mem"); });
-
-    sprintf(ssid, NAME_PREFIX "%06x", ESP.getChipId());
+    sprintf(name, NAME_PREFIX "%06x", ESP.getChipId());
     sprintf(hostname, HOSTNAME_PREFIX "%06x", ESP.getChipId());
 
-    initWiFiManager(ssid);
+    initWiFiManager(name);
     initNTPClock();
-    initRemoteDebug(ssid);
+    initRemoteDebug(name);
     initWeb(hostname);
-    initEnvironmentReporting(ssid);
+    mqtt_init(name);
+    initEnvironmentReporting();
 
-    initHomeKitServer(ssid, loop);
+    initHomeKitServer(name, loop);
 
     if (!initHeatPump()) {
         led_status_signal(&status_led_error);

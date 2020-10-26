@@ -5,16 +5,14 @@
 #include <Ticker.h>
 #include <Wire.h>
 
-#include "env_sensor.h"
-#include "debug.h"
 #include "accessory.h"
+#include "debug.h"
+#include "env_sensor.h"
 #include "heatpump_client.h"
+#include "mqtt.h"
 #include "web.h"
 
 #define SAMPLE_INTERVAL 10
-
-// FIXME: name should be configurable
-const char *sensorName;
 
 static Adafruit_BME280 bme;
 
@@ -27,31 +25,7 @@ static Adafruit_Sensor *humiditySensor = nullptr;
 
 static Ticker ticker;
 
-WiFiClient net;
-MQTTClient mqtt;
 char env_sensor_status[30] = {0};
-
-static bool mqttConnect() {
-    const int timeout = 3; // 30 ticks = 3000ms
-    int tick = 0;
-    while (!mqtt.connect(sensorName) && ++tick < timeout) {
-        delay(10);
-    }
-
-    if (tick < timeout) {
-        return true;
-    } else {
-        // FIXME: report this in the status page
-        MIE_LOG("MQTT connection failed");
-        return false;
-    }
-}
-
-bool mqttIsConfigured() {
-    return strlen(settings.mqtt_server) 
-            && strlen(settings.mqtt_temp)
-            && strlen(settings.mqtt_humidity);
-}
 
 static void _updateSensorReading() {
     sensors_event_t temperatureEvent;
@@ -67,14 +41,20 @@ static void _updateSensorReading() {
     temperatureSensor->getSensor(&sensor);
     snprintf(env_sensor_status, sizeof(env_sensor_status), "%s %.1fºC %.1f%%RH", sensor.name, temperature, humidity);
 
-    if (mqttIsConfigured() && mqttConnect()) {
+    if (mqtt_connect()) {
         char str[6];
-        snprintf(str, sizeof(str), "%.1f", temperature);
-        mqtt.publish(settings.mqtt_temp, str);
-        snprintf(str, sizeof(str), "%.1f", humidity);
-        mqtt.publish(settings.mqtt_humidity, str);
-        snprintf(str, sizeof(str), "%.1f", dewPoint);
-        mqtt.publish(settings.mqtt_dew_point, str);
+        if (strlen(settings.mqtt_temp)) {
+            snprintf(str, sizeof(str), "%.1f", temperature);
+            mqtt.publish(settings.mqtt_temp, str);
+        }
+        if (strlen(settings.mqtt_humidity)) {
+            snprintf(str, sizeof(str), "%.1f", humidity);
+            mqtt.publish(settings.mqtt_humidity, str);
+        }
+        if (strlen(settings.mqtt_dew_point)) {
+            snprintf(str, sizeof(str), "%.1f", dewPoint);
+            mqtt.publish(settings.mqtt_dew_point, str);
+        }
     }
 
     _set_characteristic_float(&ch_dehumidifier_relative_humidity, humidity, true);
@@ -84,9 +64,7 @@ static void _updateSensorReading() {
     }
 }
 
-void initEnvironmentReporting(const char* ssid) {
-    sensorName = ssid;
-
+void initEnvironmentReporting() {
     sensors_event_t temperatureEvent;
     sensors_event_t humidityEvent;
 
@@ -132,17 +110,6 @@ void initEnvironmentReporting(const char* ssid) {
     }
 
     if (temperatureSensor && humiditySensor) {
-        temperatureSensor->printSensorDetails();
-        humiditySensor->printSensorDetails();
-
-        if (mqttIsConfigured()) {
-            MIE_LOG("Connecting to MQTT broker %s:%u...", settings.mqtt_server, settings.mqtt_port);
-            mqtt.begin(settings.mqtt_server, (int)settings.mqtt_port, net);
-            mqttConnect();
-        } else {
-            MIE_LOG("MQTT reporting not configured");
-        }
-
         _updateSensorReading();
         ticker.attach_scheduled(SAMPLE_INTERVAL, _updateSensorReading);
     } else {
