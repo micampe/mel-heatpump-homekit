@@ -1,6 +1,7 @@
 #include "debug.h"
 
 #include <Ticker.h>
+#include <arduino_homekit_server.h>
 #include <stdio.h>
 
 #include "mqtt.h"
@@ -13,6 +14,7 @@ Ticker statsTicker;
 static char *heapFreeTopic;
 static char *heapMaxTopic;
 static char *stackFreeTopic;
+static char *homeKitClients;
 
 void initRemoteDebug(const char ssid[]) {
 #ifdef MIE_DEBUG
@@ -28,6 +30,7 @@ void initRemoteDebug(const char ssid[]) {
     asprintf(&heapFreeTopic, "debug/%s/heap_free", ssid);
     asprintf(&heapMaxTopic, "debug/%s/heap_max", ssid);
     asprintf(&stackFreeTopic, "debug/%s/stack_free", ssid);
+    asprintf(&homeKitClients, "debug/%s/homekit_clients", ssid);
 
     statsTicker.attach(STATS_INTERVAL, [] {
         char str[6];
@@ -37,5 +40,8 @@ void initRemoteDebug(const char ssid[]) {
         mqtt.publish(heapMaxTopic, str);
         snprintf(str, sizeof(str), "%u", ESP.getFreeContStack());
         mqtt.publish(stackFreeTopic, str);
+        // N * 1000 to scale it similar to memory values
+        snprintf(str, sizeof(str), "%d", arduino_homekit_connected_clients_count() * 1000);
+        mqtt.publish(homeKitClients, str);
     });
 }
