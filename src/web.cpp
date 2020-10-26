@@ -88,7 +88,8 @@ static void loadSettings() {
     if (error) {
         MIE_LOG("Error loading coonfiguration file");
     } else {
-        settings.mqtt_port = doc["mqtt_port"] | 1883;
+        int port = strtol(doc["mqtt_port"], nullptr, 10);
+        settings.mqtt_port = port > 0 ? port : 1883;
         strlcpy(settings.mqtt_server, doc["mqtt_server"] | "", sizeof(settings.mqtt_server));
         strlcpy(settings.mqtt_temp, doc["mqtt_temp"] | "", sizeof(settings.mqtt_temp));
         strlcpy(settings.mqtt_humidity, doc["mqtt_hum"] | "", sizeof(settings.mqtt_humidity));
