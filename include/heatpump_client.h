@@ -1,10 +1,7 @@
-#ifndef HEATPUMP_CLIENT_H
-#define HEATPUMP_CLIENT_H
+#pragma once
 
 #include <HeatPump.h>
 
 extern HeatPump heatpump;
 
-bool initHeatPump();
-
-#endif
+bool heatpump_init();

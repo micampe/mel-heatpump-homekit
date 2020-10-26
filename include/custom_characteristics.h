@@ -1,5 +1,4 @@
-#ifndef CUSTOM_CHARACTERISTICS_H
-#define CUSTOM_CHARACTERISTICS_H
+#pragma once
 
 #define HOMEKIT_CHARACTERISTIC_DEW_POINT "095c46e2-278e-4e3c-b9e7-364622a0f501"
 #define HOMEKIT_DECLARE_CHARACTERISTIC_DEW_POINT(_value, ...) \
@@ -14,5 +13,3 @@
     .min_step = (float[]) {0.1}, \
     .value = HOMEKIT_FLOAT_(_value), \
     ##__VA_ARGS__
-
-#endif

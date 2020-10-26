@@ -13,4 +13,4 @@ struct Settings {
 extern Settings settings;
 extern ESP8266WebServer httpServer;
 
-void initWeb(const char* hostname);
+void web_init(const char* hostname);

@@ -30,14 +30,14 @@ using namespace mime;
 extern const char* index_html;
 
 template <size_t SIZE>
-static void heapStatus(char (&str)[SIZE]) {
+static void status_heap(char (&str)[SIZE]) {
     snprintf(str, sizeof(str), "%d.%03dB / %d%% / %d.%03dB",
             ESP.getFreeHeap() / 1000, ESP.getFreeHeap() % 1000,
             ESP.getHeapFragmentation(),
             ESP.getMaxFreeBlockSize() / 1000, ESP.getMaxFreeBlockSize() % 1000);
 }
 
-static void uptimeString(char (&str)[20]) {
+static void status_uptime(char (&str)[20]) {
     long val = millis() / 1000;
     int days = elapsedDays(val);
     int hours = numberOfHours(val);
@@ -56,7 +56,7 @@ static void uptimeString(char (&str)[20]) {
     }
 }
 
-static void mqttStatus(char (&str)[22]) {
+static void status_mqtt(char (&str)[22]) {
     size_t size = sizeof(str);
     if (!mqtt_is_configured()) {
         strlcpy(str, "not configured", size);
@@ -69,7 +69,7 @@ static void mqttStatus(char (&str)[22]) {
     }
 }
 
-static void homeKitStatus(char (&str)[20]) {
+static void status_homekit(char (&str)[20]) {
     size_t size = sizeof(str);
     homekit_server_t *homekit = arduino_homekit_get_running_server();
     if (homekit->paired) {
@@ -80,7 +80,7 @@ static void homeKitStatus(char (&str)[20]) {
     }
 }
 
-static void loadSettings() {
+static void settings_load() {
     File config = LittleFS.open(CONFIG_FILE, "r");
     StaticJsonDocument<JSON_CAPACITY> doc;
     DeserializationError error = deserializeJson(doc, config);
@@ -97,7 +97,7 @@ static void loadSettings() {
     config.close();
 }
 
-static void initSettings() {
+static void settings_init() {
     LittleFS.begin();
     if (!LittleFS.exists(CONFIG_FILE)) {
         File config = LittleFS.open(CONFIG_FILE, "w");
@@ -147,23 +147,23 @@ static void web_post_settings() {
 }
 
 static void web_get_status() {
-    char heap_status[25];
-    heapStatus(heap_status);
-    char uptime[20];
-    uptimeString(uptime);
-    char mqtt_status[22];
-    mqttStatus(mqtt_status);
-    char homekit_status[20];
-    homeKitStatus(homekit_status);
+    char heap_str[25];
+    status_heap(heap_str);
+    char uptime_str[20];
+    status_uptime(uptime_str);
+    char mqtt_str[22];
+    status_mqtt(mqtt_str);
+    char homekit_str[20];
+    status_homekit(homekit_str);
 
     StaticJsonDocument<JSON_CAPACITY> doc;
     doc["title"] = WiFi.hostname();
     doc["heatpump"] = heatpump.isConnected() ? "connected" : "not connected";
-    doc["homekit"] = homekit_status;
+    doc["homekit"] = homekit_str;
     doc["env"] = strlen(env_sensor_status) ? env_sensor_status : "not connected";
-    doc["mqtt"] = mqtt_status;
-    doc["uptime"] = uptime;
-    doc["heap"] = heap_status;
+    doc["mqtt"] = mqtt_str;
+    doc["uptime"] = uptime_str;
+    doc["heap"] = heap_str;
     doc["firmware"] = GIT_DESCRIBE;
 
     size_t doc_size = measureJsonPretty(doc);
@@ -187,9 +187,9 @@ static void web_post_unpair() {
     ESP.restart();
 }
 
-void initWeb(const char* hostname) {
-    initSettings();
-    loadSettings();
+void web_init(const char* hostname) {
+    settings_init();
+    settings_load();
 
     updateServer.setup(&httpServer, "/_update");
 

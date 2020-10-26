@@ -27,7 +27,7 @@ static Ticker ticker;
 
 char env_sensor_status[30] = {0};
 
-static void _updateSensorReading() {
+static void env_sensor_update() {
     sensors_event_t temperatureEvent;
     temperatureSensor->getEvent(&temperatureEvent);
     sensors_event_t humidityEvent;
@@ -57,14 +57,14 @@ static void _updateSensorReading() {
         }
     }
 
-    _set_characteristic_float(&ch_dehumidifier_relative_humidity, humidity, true);
-    _set_characteristic_float(&ch_dew_point, dewPoint, true);
+    accessory_set_float(&ch_dehumidifier_relative_humidity, humidity, true);
+    accessory_set_float(&ch_dew_point, dewPoint, true);
     if (!heatpump.isConnected()) {
-        _set_characteristic_float(&ch_thermostat_current_temperature, temperature, true);
+        accessory_set_float(&ch_thermostat_current_temperature, temperature, true);
     }
 }
 
-void initEnvironmentReporting() {
+void env_sensor_init() {
     sensors_event_t temperatureEvent;
     sensors_event_t humidityEvent;
 
@@ -110,8 +110,8 @@ void initEnvironmentReporting() {
     }
 
     if (temperatureSensor && humiditySensor) {
-        _updateSensorReading();
-        ticker.attach_scheduled(SAMPLE_INTERVAL, _updateSensorReading);
+        env_sensor_update();
+        ticker.attach_scheduled(SAMPLE_INTERVAL, env_sensor_update);
     } else {
         MIE_LOG("No temperature and humidity sensors found");
     }

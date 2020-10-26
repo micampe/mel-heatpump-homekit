@@ -22,7 +22,7 @@ static Ticker keepAliveTicker;
 // avoid conflicts when changing multiple settings from HomeKit
 #define UPDATE_INTERVAL 5000
 
-heatpumpSettings _settingsForCurrentState() {
+static heatpumpSettings _settingsForCurrentState() {
     heatpumpSettings settings;
 
     uint8_t therm_mode = ch_thermostat_target_heating_cooling_state.value.uint8_value;
@@ -75,7 +75,7 @@ heatpumpSettings _settingsForCurrentState() {
     return settings;
 }
 
-void scheduleHeatPumpUpdate() {
+static void scheduleHeatPumpUpdate() {
     updateTicker.once_ms_scheduled(UPDATE_INTERVAL, [] {
         unsigned long start = millis();
 
@@ -95,120 +95,120 @@ void scheduleHeatPumpUpdate() {
     });
 }
 
-void _updateFanState(bool active) {
-    _set_characteristic_uint8(&ch_fan_active, active, true);
+static void _updateFanState(bool active) {
+    accessory_set_uint8(&ch_fan_active, active, true);
     if (active) {
         uint8_t mode = ch_fan_target_state.value.uint8_value;
         float speed = ch_fan_rotation_speed.value.float_value;
         if (mode == 1) {
-            _set_characteristic_float(&ch_fan_rotation_speed, HK_SPEED(AUTO_FAN_SPEED), true);
+            accessory_set_float(&ch_fan_rotation_speed, HK_SPEED(AUTO_FAN_SPEED), true);
         } else if (speed < 20) {
-            _set_characteristic_uint8(&ch_fan_target_state, 1, true);
-            _set_characteristic_float(&ch_fan_rotation_speed, HK_SPEED(AUTO_FAN_SPEED), true);
+            accessory_set_uint8(&ch_fan_target_state, 1, true);
+            accessory_set_float(&ch_fan_rotation_speed, HK_SPEED(AUTO_FAN_SPEED), true);
         }
     } else {
         // _set_characteristic_float(&ch_fan_rotation_speed, 0, true);
     }
 }
 
-void set_target_heating_cooling_state(homekit_value_t value) {
+static void set_target_heating_cooling_state(homekit_value_t value) {
     uint8_t targetState = value.uint8_value;
-    _set_characteristic_uint8(&ch_thermostat_target_heating_cooling_state, targetState, false);
+    accessory_set_uint8(&ch_thermostat_target_heating_cooling_state, targetState, false);
     MIE_LOG("⬅ HK therm target state %d", targetState);
 
     bool active = targetState != HOMEKIT_TARGET_HEATING_COOLING_STATE_OFF;
     _updateFanState(active);
     if (active) {
-        _set_characteristic_uint8(&ch_dehumidifier_active, 0, true);
+        accessory_set_uint8(&ch_dehumidifier_active, 0, true);
     }
 
     scheduleHeatPumpUpdate();
 }
 
-void set_target_temperature(homekit_value_t value) {
+static void set_target_temperature(homekit_value_t value) {
     float targetTemperature = value.float_value;
-    _set_characteristic_float(&ch_thermostat_target_temperature, targetTemperature, false);
+    accessory_set_float(&ch_thermostat_target_temperature, targetTemperature, false);
     MIE_LOG("⬅ HK target temp %.1f", targetTemperature);
 
     scheduleHeatPumpUpdate();
 }
 
-void set_dehumidifier_active(homekit_value_t value) {
+static void set_dehumidifier_active(homekit_value_t value) {
     uint8_t active = value.uint8_value;
-    _set_characteristic_uint8(&ch_dehumidifier_active, active, false);
+    accessory_set_uint8(&ch_dehumidifier_active, active, false);
     MIE_LOG("⬅ HK dehum active %d", active);
 
     _updateFanState(active);
     if (active) {
-        _set_characteristic_uint8(&ch_thermostat_target_heating_cooling_state,
+        accessory_set_uint8(&ch_thermostat_target_heating_cooling_state,
                 HOMEKIT_TARGET_HEATING_COOLING_STATE_OFF, true);
     }
 
     scheduleHeatPumpUpdate();
 }
 
-void set_swing_horizontal(homekit_value_t value) {
+static void set_swing_horizontal(homekit_value_t value) {
     uint8_t swing = value.uint8_value;
-    _set_characteristic_uint8(&ch_dehumidifier_swing_mode, swing, false);
+    accessory_set_uint8(&ch_dehumidifier_swing_mode, swing, false);
     MIE_LOG("⬅ HK hor swing %d", swing);
 
     scheduleHeatPumpUpdate();
 }
 
-void set_fan_active(homekit_value_t value) {
+static void set_fan_active(homekit_value_t value) {
     uint8_t active = value.uint8_value;
-    _set_characteristic_uint8(&ch_fan_active, active, false);
+    accessory_set_uint8(&ch_fan_active, active, false);
     MIE_LOG("⬅ HK fan active %d", active);
 
     if (!active) {
-        _set_characteristic_uint8(&ch_dehumidifier_active, false, true);
-        _set_characteristic_uint8(&ch_thermostat_target_heating_cooling_state,
+        accessory_set_uint8(&ch_dehumidifier_active, false, true);
+        accessory_set_uint8(&ch_thermostat_target_heating_cooling_state,
                 HOMEKIT_TARGET_HEATING_COOLING_STATE_OFF, true);
     }
 
     scheduleHeatPumpUpdate();
 }
 
-void set_fan_speed(homekit_value_t value) {
+static void set_fan_speed(homekit_value_t value) {
     float speed = roundf(value.float_value);
-    if (_set_characteristic_float(&ch_fan_rotation_speed, speed, false)) {
+    if (accessory_set_float(&ch_fan_rotation_speed, speed, false)) {
         MIE_LOG("⬅ HK fan speed %d", (int)speed);
 
         bool active = ch_fan_active.value.uint8_value;
         uint8_t mode = ch_fan_target_state.value.uint8_value;
         if (active && mode == 1) {
             MIE_LOG(" Fan is in auto mode, ignoring speed change");
-            _set_characteristic_float(&ch_fan_rotation_speed, HK_SPEED(AUTO_FAN_SPEED), true);
+            accessory_set_float(&ch_fan_rotation_speed, HK_SPEED(AUTO_FAN_SPEED), true);
         } else {
-            _set_characteristic_uint8(&ch_fan_target_state, 0, true);
+            accessory_set_uint8(&ch_fan_target_state, 0, true);
         }
 
         scheduleHeatPumpUpdate();
     }
 }
 
-void set_fan_auto_mode(homekit_value_t value) {
+static void set_fan_auto_mode(homekit_value_t value) {
     uint8_t mode = value.uint8_value;
-    _set_characteristic_uint8(&ch_fan_target_state, mode, false);
+    accessory_set_uint8(&ch_fan_target_state, mode, false);
     MIE_LOG("⬅ HK fan auto %d", mode);
 
     if (mode == 1) {
-        _set_characteristic_float(&ch_fan_rotation_speed, HK_SPEED(AUTO_FAN_SPEED), true);
+        accessory_set_float(&ch_fan_rotation_speed, HK_SPEED(AUTO_FAN_SPEED), true);
     }
 
     scheduleHeatPumpUpdate();
 }
 
-void set_fan_swing(homekit_value_t value) {
+static void set_fan_swing(homekit_value_t value) {
     uint8_t swing = value.uint8_value;
-    _set_characteristic_uint8(&ch_fan_swing_mode, swing, false);
+    accessory_set_uint8(&ch_fan_swing_mode, swing, false);
     MIE_LOG("⬅ HK ver swing %d", swing);
     scheduleHeatPumpUpdate();
 }
 
 
 // the loop function will be called during the pairing process
-void initHomeKitServer(const char *ssid, std::function<void()> loop) {
+void homekit_init(const char *ssid, std::function<void()> loop) {
     MIE_LOG("Starting HomeKit server...");
 
     sprintf(serial, "%06x", ESP.getChipId());

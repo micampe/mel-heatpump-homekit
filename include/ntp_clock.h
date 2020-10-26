@@ -1,6 +1,3 @@
-#ifndef NTP_CLOCK_H
-#define NTP_CLOCK_H
+#pragma once
 
-void initNTPClock();
-
-#endif
+void ntp_clock_init();

@@ -27,16 +27,16 @@ void setup() {
     sprintf(name, NAME_PREFIX "%06x", ESP.getChipId());
     sprintf(hostname, HOSTNAME_PREFIX "%06x", ESP.getChipId());
 
-    initWiFiManager(name);
-    initNTPClock();
-    initRemoteDebug(name);
-    initWeb(hostname);
+    wifi_init(name);
+    ntp_clock_init();
+    debug_init(name);
+    web_init(hostname);
     mqtt_init(name);
-    initEnvironmentReporting();
+    env_sensor_init();
 
-    initHomeKitServer(name, loop);
+    homekit_init(name, loop);
 
-    if (!initHeatPump()) {
+    if (!heatpump_init()) {
         led_status_signal(&status_led_error);
     }
 

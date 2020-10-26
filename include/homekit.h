@@ -1,5 +1,4 @@
-#ifndef HOMEKIT_H
-#define HOMEKIT_H
+#pragma once
 
 #include <functional>
 
@@ -10,6 +9,4 @@
 #define HK_SPEED(s) ((float)s * 20)
 #define HP_SPEED(s) (s <= 20 ? "QUIET" : s <= 40 ? "1" : s <= 60 ? "2" : s <= 80 ? "3" : "4")
 
-void initHomeKitServer(const char *ssid, std::function<void()> loop);
-
-#endif
+void homekit_init(const char *ssid, std::function<void()> loop);

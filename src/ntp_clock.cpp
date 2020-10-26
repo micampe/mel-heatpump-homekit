@@ -9,7 +9,7 @@
 
 static bool timeWasSet = false;
 
-void initNTPClock() {
+void ntp_clock_init() {
     configTime(TZ_Etc_UTC, "pool.ntp.org");
 
     settimeofday_cb([] {

@@ -13,7 +13,7 @@ WiFiManager wifiManager;
 #define DRD_ADDRESS 0x00
 static DoubleResetDetect drd(DRD_TIMEOUT, DRD_ADDRESS);
 
-static void wifiConnectionFailed() {
+static void wifi_connection_failed() {
     led_status_signal(&status_led_error);
     Serial.println("WiFi connection failed, restarting");
     delay(1000);
@@ -21,14 +21,14 @@ static void wifiConnectionFailed() {
     delay(3000);
 }
 
-static void wifiConfigModeCallback(WiFiManager *wifiManager) {
+static void wifi_did_enter_config_mode(WiFiManager *wifiManager) {
     led_status_set(&status_led_waiting_wifi);
 }
 
-void initWiFiManager(const char* ssid) {
+void wifi_init(const char* ssid) {
     WiFi.setSleepMode(WIFI_NONE_SLEEP);
 
-    wifiManager.setAPCallback(wifiConfigModeCallback);
+    wifiManager.setAPCallback(wifi_did_enter_config_mode);
     wifiManager.setTimeout(120);
 
     if (drd.detect()) {
@@ -37,11 +37,11 @@ void initWiFiManager(const char* ssid) {
 
         Serial.println("Starting config portal");
         if (!wifiManager.startConfigPortal(ssid)) {
-            wifiConnectionFailed();
+            wifi_connection_failed();
         }
     } else {
         if (!wifiManager.autoConnect(ssid)) {
-            wifiConnectionFailed();
+            wifi_connection_failed();
         }
     }
 }

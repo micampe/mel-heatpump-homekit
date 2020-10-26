@@ -20,7 +20,7 @@ void set_placeholder() {}
 
 // Helpers
 
-bool _set_characteristic_uint8(homekit_characteristic_t *characteristic, uint8_t value, bool notify) {
+bool accessory_set_uint8(homekit_characteristic_t *characteristic, uint8_t value, bool notify) {
     if (characteristic->value.uint8_value != value) {
         characteristic->value.uint8_value = value;
         if (notify) {
@@ -32,7 +32,7 @@ bool _set_characteristic_uint8(homekit_characteristic_t *characteristic, uint8_t
     }
 }
 
-bool _set_characteristic_float(homekit_characteristic_t *characteristic, float value, bool notify) {
+bool accessory_set_float(homekit_characteristic_t *characteristic, float value, bool notify) {
     if (characteristic->value.float_value != value) {
         characteristic->value.float_value = value;
         if (notify) {

@@ -1,11 +1,7 @@
-#ifndef HUMIDITY_H
-#define HUMIDITY_H
+#pragma once
 
 #include <stdbool.h>
 
 extern char env_sensor_status[];
 
-bool mqttIsConfigured();
-void initEnvironmentReporting();
-
-#endif
+void env_sensor_init();

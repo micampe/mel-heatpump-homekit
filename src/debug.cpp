@@ -16,7 +16,7 @@ static char *heapMaxTopic;
 static char *stackFreeTopic;
 static char *homeKitClients;
 
-void initRemoteDebug(const char ssid[]) {
+void debug_init(const char ssid[]) {
 #ifdef MIE_DEBUG
     Serial.println("Initializing remote debug...");
 
