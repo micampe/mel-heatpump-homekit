@@ -229,6 +229,10 @@ void homekit_init(const char *ssid, std::function<void()> loop) {
         delay(100);
     }
 
+    // this should only be updated when the accessory changes
+    // or on firmware updates
+    homekit_update_config_number();
+
     ch_thermostat_target_heating_cooling_state.setter = set_target_heating_cooling_state;
     ch_thermostat_target_temperature.setter = set_target_temperature;
 
