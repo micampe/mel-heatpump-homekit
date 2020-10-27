@@ -34,7 +34,7 @@ void debug_init(const char ssid[]) {
     asprintf(&stackFreeTopic, "debug/%s/stack_free", ssid);
     asprintf(&homeKitClients, "debug/%s/homekit_clients", ssid);
 
-    statsTicker.attach(STATS_INTERVAL, [] {
+    statsTicker.attach_scheduled(STATS_INTERVAL, [] {
         char str[6];
         snprintf(str, sizeof(str), "%u", ESP.getFreeHeap());
         mqtt.publish(heapFreeTopic, str);

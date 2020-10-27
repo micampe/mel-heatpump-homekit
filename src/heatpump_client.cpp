@@ -12,7 +12,7 @@ HeatPump heatpump;
 static Ticker syncTicker;
 
 // slower sync seems to help in avoiding unresponsive homekit accessory
-#define SYNC_INTERVAL 3000
+#define SYNC_INTERVAL 3
 
 
 // --- Settings changes
@@ -216,7 +216,7 @@ bool heatpump_init() {
     heatpump.enableExternalUpdate();
     heatpump.disableAutoUpdate();
 
-    syncTicker.attach_ms_scheduled(SYNC_INTERVAL, [] {
+    syncTicker.attach_scheduled(SYNC_INTERVAL, [] {
         unsigned long start = millis();
         if (heatpump.isConnected()) {
             heatpump.sync();

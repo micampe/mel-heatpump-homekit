@@ -16,7 +16,7 @@ static char serial[7];
 static Ticker updateTicker;
 static Ticker keepAliveTicker;
 
-#define ANNOUNCE_INTERVAL 60
+#define ANNOUNCE_INTERVAL 2
 
 // throttle updates to the heat pump to try to send more settings at once and
 // avoid conflicts when changing multiple settings from HomeKit
