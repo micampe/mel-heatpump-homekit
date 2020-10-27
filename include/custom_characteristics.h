@@ -10,6 +10,6 @@
                 | homekit_permissions_notify, \
     .min_value = (float[]) {-50}, \
     .max_value = (float[]) {50}, \
-    .min_step = (float[]) {0.1}, \
+    .min_step = (float[]) {0.01}, \
     .value = HOMEKIT_FLOAT_(_value), \
     ##__VA_ARGS__

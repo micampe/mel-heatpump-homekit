@@ -27,6 +27,14 @@ static Ticker ticker;
 
 char env_sensor_status[30] = {0};
 
+static double dew_point(double t, double r) {
+    // Magnus-Tetens approximation
+    double a = 17.27;
+    double b = 237.7;
+    double alpha = ((a * t) / (b + t)) + log(r / 100);
+    return (b * alpha) / (a - alpha);
+}
+
 static void env_sensor_update() {
     sensors_event_t temperatureEvent;
     temperatureSensor->getEvent(&temperatureEvent);
@@ -35,24 +43,24 @@ static void env_sensor_update() {
 
     float temperature = temperatureEvent.temperature;
     float humidity = humidityEvent.relative_humidity;
-    float dewPoint = temperature - ((100 - humidity) / 5);
+    float dewPoint = dew_point(temperature, humidity);
 
     sensor_t sensor;
     temperatureSensor->getSensor(&sensor);
-    snprintf(env_sensor_status, sizeof(env_sensor_status), "%s %.1fºC %.1f%%RH", sensor.name, temperature, humidity);
+    snprintf(env_sensor_status, sizeof(env_sensor_status), "%s %.2fºC %.2f%%RH", sensor.name, temperature, humidity);
 
     if (mqtt_connect()) {
         char str[6];
-        if (strlen(settings.mqtt_temp)) {
-            snprintf(str, sizeof(str), "%.1f", temperature);
+        if (strlen(settings.mqtt_temp) && std::isnormal(temperature)) {
+            snprintf(str, sizeof(str), "%.2f", temperature);
             mqtt.publish(settings.mqtt_temp, str);
         }
-        if (strlen(settings.mqtt_humidity)) {
-            snprintf(str, sizeof(str), "%.1f", humidity);
+        if (strlen(settings.mqtt_humidity) && std::isnormal(humidity)) {
+            snprintf(str, sizeof(str), "%.2f", humidity);
             mqtt.publish(settings.mqtt_humidity, str);
         }
-        if (strlen(settings.mqtt_dew_point)) {
-            snprintf(str, sizeof(str), "%.1f", dewPoint);
+        if (strlen(settings.mqtt_dew_point) && std::isnormal(dewPoint)) {
+            snprintf(str, sizeof(str), "%.2f", dewPoint);
             mqtt.publish(settings.mqtt_dew_point, str);
         }
     }
@@ -110,7 +118,6 @@ void env_sensor_init() {
     }
 
     if (temperatureSensor && humiditySensor) {
-        env_sensor_update();
         ticker.attach_scheduled(SAMPLE_INTERVAL, env_sensor_update);
     } else {
         MIE_LOG("No temperature and humidity sensors found");
