@@ -8,6 +8,7 @@ struct Settings {
     char mqtt_temp[80];
     char mqtt_humidity[80];
     char mqtt_dew_point[80];
+    char mqtt_app_temp[80];
 };
 
 extern Settings settings;

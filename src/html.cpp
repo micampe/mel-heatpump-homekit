@@ -281,12 +281,13 @@ window.onload = function () {
       <input placeholder='Port' value='1883' name='mqtt_port' type='text' maxlength=6>
       </p>
       <p><label for='mqtt_temp'>Environment Sensor</label>
-      <input placeholder='Temperature reporting topic' name='mqtt_temp' type='text' maxlength=80>
-      <input placeholder='Relative humidity reporting topic' name='mqtt_hum' type='text' maxlength=80>
-      <input placeholder='Dew point reporting topic' name='mqtt_dew_point' type='text' maxlength=80>
-      <span class='caption'>If these topics are set, temperature and relative
-        humidity readings will be periodically posted to mqtt. &mdash; This
-        feature requires an external sensor.</p>
+      <input placeholder='Temperature topic' name='mqtt_temp' type='text' maxlength=80>
+      <input placeholder='Relative humidity topic' name='mqtt_hum' type='text' maxlength=80>
+      <input placeholder='Dew point topic' name='mqtt_dew_point' type='text' maxlength=80>
+      <input placeholder='Apparent temperature topic' name='mqtt_app_temp' type='text' maxlength=80>
+      <span class='caption'>If these topics are set, sensor readings will be
+        periodically posted to mqtt. &mdash; This feature requires an external
+        sensor.</p>
   <!--
       <p><label for='mqtt_remote_temp'>Remote Temperature</label>
       <input placeholder='Remote temperature topic' name='mqtt_remote_temp' type='text' maxlength=80>

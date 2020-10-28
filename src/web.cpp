@@ -93,6 +93,7 @@ static void settings_load() {
         strlcpy(settings.mqtt_temp, doc["mqtt_temp"] | "", sizeof(settings.mqtt_temp));
         strlcpy(settings.mqtt_humidity, doc["mqtt_hum"] | "", sizeof(settings.mqtt_humidity));
         strlcpy(settings.mqtt_dew_point, doc["mqtt_dew_point"] | "", sizeof(settings.mqtt_dew_point));
+        strlcpy(settings.mqtt_app_temp, doc["mqtt_app_temp"] | "", sizeof(settings.mqtt_app_temp));
     }
     config.close();
 }

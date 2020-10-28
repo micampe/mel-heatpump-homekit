@@ -13,3 +13,17 @@
     .min_step = (float[]) {0.01}, \
     .value = HOMEKIT_FLOAT_(_value), \
     ##__VA_ARGS__
+
+#define HOMEKIT_CHARACTERISTIC_APPARENT_TEMPERATURE "c1283352-3d12-4777-acd5-4734760f1ac8"
+#define HOMEKIT_DECLARE_CHARACTERISTIC_APPARENT_TEMPERATURE(_value, ...) \
+    .type = HOMEKIT_CHARACTERISTIC_APPARENT_TEMPERATURE, \
+    .description = "Apparent Temperature", \
+    .format = homekit_format_float, \
+    .unit = homekit_unit_celsius, \
+    .permissions = homekit_permissions_paired_read \
+                | homekit_permissions_notify, \
+    .min_value = (float[]) {-50}, \
+    .max_value = (float[]) {50}, \
+    .min_step = (float[]) {0.01}, \
+    .value = HOMEKIT_FLOAT_(_value), \
+    ##__VA_ARGS__

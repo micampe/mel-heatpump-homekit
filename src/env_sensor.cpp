@@ -35,6 +35,23 @@ static double dew_point(double t, double r) {
     return (b * alpha) / (a - alpha);
 }
 
+static double apparent_temperature(double t, double r) {
+    // Rothfusz approximation
+    double c1 = -8.78469475556;
+    double c2 = 1.61139411;
+    double c3 = 2.33854883889;
+    double c4 = -0.14611605;
+    double c5 = -0.012308094;
+    double c6 = -0.0164248277778;
+    double c7 = 0.002211732;
+    double c8 = 0.00072546;
+    double c9 = -0.000003582;
+    double t2 = t * t;
+    double r2 = r * r;
+
+    return c1 + c2 * t + c3 * r + c4 * t * r + c5 * t2 + c6 * r2 + c7 * t2 * r + c8 * t * r2 + c9 * t2 * r2;
+}
+
 static void env_sensor_update() {
     sensors_event_t temperatureEvent;
     temperatureSensor->getEvent(&temperatureEvent);
@@ -44,6 +61,7 @@ static void env_sensor_update() {
     float temperature = temperatureEvent.temperature;
     float humidity = humidityEvent.relative_humidity;
     float dewPoint = dew_point(temperature, humidity);
+    float appTemp = apparent_temperature(temperature, humidity);
 
     sensor_t sensor;
     temperatureSensor->getSensor(&sensor);
@@ -63,10 +81,15 @@ static void env_sensor_update() {
             snprintf(str, sizeof(str), "%.2f", dewPoint);
             mqtt.publish(settings.mqtt_dew_point, str);
         }
+        if (strlen(settings.mqtt_app_temp) && std::isnormal(appTemp)) {
+            snprintf(str, sizeof(str), "%.2f", appTemp);
+            mqtt.publish(settings.mqtt_app_temp, str);
+        }
     }
 
     accessory_set_float(&ch_dehumidifier_relative_humidity, humidity, true);
     accessory_set_float(&ch_dew_point, dewPoint, true);
+    accessory_set_float(&ch_apparent_temp, appTemp, true);
     if (!heatpump.isConnected()) {
         accessory_set_float(&ch_thermostat_current_temperature, temperature, true);
     }

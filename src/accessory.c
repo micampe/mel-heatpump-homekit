@@ -137,6 +137,7 @@ homekit_characteristic_t ch_dehumidifier_target_state = HOMEKIT_CHARACTERISTIC_(
 
 // Custom
 homekit_characteristic_t ch_dew_point = HOMEKIT_CHARACTERISTIC_(DEW_POINT, 0);
+homekit_characteristic_t ch_apparent_temp = HOMEKIT_CHARACTERISTIC_(APPARENT_TEMPERATURE, 0);
 
 homekit_service_t dehumidifier_service = HOMEKIT_SERVICE_(HUMIDIFIER_DEHUMIDIFIER,
     .characteristics = (homekit_characteristic_t *[]) {
@@ -147,6 +148,7 @@ homekit_service_t dehumidifier_service = HOMEKIT_SERVICE_(HUMIDIFIER_DEHUMIDIFIE
         &ch_dehumidifier_target_state,
         &ch_dehumidifier_swing_mode,
         &ch_dew_point,
+        &ch_apparent_temp,
         NULL
     });
 
