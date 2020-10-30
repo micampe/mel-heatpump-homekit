@@ -81,30 +81,30 @@ static void status_homekit(char (&str)[20]) {
     }
 }
 
-static void settings_load() {
-    File config = LittleFS.open(CONFIG_FILE, "r");
+void settings_init() {
+    LittleFS.begin();
+    File f = LittleFS.open(CONFIG_FILE, "r");
+    if (!f) {
+        MIE_LOG("Creating empty config file");
+        f = LittleFS.open(CONFIG_FILE, "w");
+        f.write("{}");
+        f.close();
+        f = LittleFS.open(CONFIG_FILE, "r");
+    }
+
     StaticJsonDocument<JSON_CAPACITY> doc;
-    DeserializationError error = deserializeJson(doc, config);
+    DeserializationError error = deserializeJson(doc, f);
     if (error) {
-        MIE_LOG("Error loading coonfiguration file");
+        MIE_LOG("Error loading configuration file");
     } else {
-        uint16_t port = strtol(doc["mqtt_port"], nullptr, 10);
+        uint16_t port = strtol(doc["mqtt_port"] | "", nullptr, 10);
         settings.mqtt_port = port > 0 ? port : 1883;
         strlcpy(settings.mqtt_server, doc["mqtt_server"] | "", sizeof(settings.mqtt_server));
         strlcpy(settings.mqtt_temp, doc["mqtt_temp"] | "", sizeof(settings.mqtt_temp));
         strlcpy(settings.mqtt_humidity, doc["mqtt_hum"] | "", sizeof(settings.mqtt_humidity));
         strlcpy(settings.mqtt_dew_point, doc["mqtt_dew_point"] | "", sizeof(settings.mqtt_dew_point));
     }
-    config.close();
-}
-
-static void settings_init() {
-    LittleFS.begin();
-    if (!LittleFS.exists(CONFIG_FILE)) {
-        File config = LittleFS.open(CONFIG_FILE, "w");
-        config.write("{}");
-        config.close();
-    }
+    f.close();
 }
 
 static void web_get_settings() {
@@ -200,8 +200,6 @@ static void web_post_unpair() {
 
 void web_init(const char* hostname) {
     settings_init();
-    settings_load();
-
     updateServer.setup(&httpServer, "/_update");
 
     httpServer.on("/", HTTP_GET, []() {
