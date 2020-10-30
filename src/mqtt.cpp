@@ -27,6 +27,10 @@ bool mqtt_init(const char* name) {
 }
 
 bool mqtt_connect() {
+    if (!mqtt_is_configured()) {
+        return false;
+    }
+
     if (mqtt.connected()) {
         return true;
     }
