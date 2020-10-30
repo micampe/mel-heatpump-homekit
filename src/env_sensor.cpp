@@ -91,6 +91,7 @@ void env_sensor_init() {
         humiditySensor->getEvent(&humidityEvent);
 
         if (!isnan(temperatureEvent.temperature) && !isnan(humidityEvent.relative_humidity)) {
+            strlcpy(env_sensor_status, "BME280", sizeof(env_sensor_status));
             MIE_LOG("Found BME280 sensor: %.1fºC %.1f%% RH",
                     temperatureEvent.temperature,
                     humidityEvent.relative_humidity);
@@ -108,6 +109,7 @@ void env_sensor_init() {
         dhtHumidity.getEvent(&humidityEvent);
 
         if (!isnan(temperatureEvent.temperature) && !isnan(humidityEvent.relative_humidity)) {
+            strlcpy(env_sensor_status, "DHT22", sizeof(env_sensor_status));
             MIE_LOG("Found DHT22 sensor: %.1fºC %.1f%% RH",
                     temperatureEvent.temperature,
                     humidityEvent.relative_humidity);
