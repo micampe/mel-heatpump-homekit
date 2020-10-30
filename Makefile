@@ -1,21 +1,17 @@
 GIT_DESCRIBE := $(shell git describe --match 'v*' --dirty='-x' --always --abbrev=4)
 
 all:
-	platformio --caller vim run --silent --environment serial
+	platformio run
 
 upload-serial:
-	platformio --caller vim run --silent --environment serial --target upload --target monitor
-
-upload-ota:
-	platformio --caller vim run --silent --environment ota --target upload
+	platformio run --environment serial --target upload --target monitor
 
 upload-release:
-	platformio --caller vim run --silent --environment release --target upload
+	platformio run --environment release --target upload
 
 dist:
-	platformio --caller vim run --silent --environment release
+	platformio run --environment release
 	cp .pio/build/release/firmware.bin bin/mel_heatpump_$(GIT_DESCRIBE).bin
-	gzip --force bin/mel_heatpump_$(GIT_DESCRIBE).bin
 
 clean:
-	platformio --caller vim run -t clean
+	platformio run --environment serial --environment release --target clean
