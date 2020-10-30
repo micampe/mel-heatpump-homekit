@@ -26,7 +26,7 @@ Ignore the colors of the wires, black will stay not connected.
 After flashing the firmware the ESP8266 will create a WiFi network named `Heat
 Pump XXXXXX`. Connect to it and set up your WiFi name and password. The device
 will then reboot and it will be ready to pair using the Home app. The pairing
-code is `111-11-1111`.
+code is `111-11-111`.
 
 After the first flashing and WiFi setup you can update the firmware from the
 web interface.
