@@ -156,6 +156,8 @@ static void web_get_status() {
     status_mqtt(mqtt_str);
     char homekit_str[20];
     status_homekit(homekit_str);
+    char firmware_str[30];
+    snprintf(firmware_str, sizeof(firmware_str), "%s (%s)", GIT_DESCRIBE, GIT_HASH);
 
     StaticJsonDocument<JSON_CAPACITY> doc;
     doc["title"] = WiFi.hostname();
@@ -165,7 +167,7 @@ static void web_get_status() {
     doc["mqtt"] = mqtt_str;
     doc["uptime"] = uptime_str;
     doc["heap"] = heap_str;
-    doc["firmware"] = GIT_DESCRIBE;
+    doc["firmware"] = firmware_str;
 
     size_t doc_size = measureJsonPretty(doc);
     char response[doc_size + 1];
