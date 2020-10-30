@@ -253,6 +253,7 @@ window.onload = function () {
     _('#upload_form').onsubmit = upload
     _('#reboot_form').onsubmit = reboot
     _('#unpair_form').onsubmit = reboot
+    _('#reset_wifi_form').onsubmit = reboot
     _('#settings_form').onsubmit = saveSettings
 
     loadSettings()
@@ -299,6 +300,9 @@ window.onload = function () {
     </form>
     <form id='reboot_form' action='/_reboot' method='post'>
       <button class="needsConfirm">Reboot ESP</button>
+    </form>
+    <form id='reset_wifi_form' action='/_reset_wifi' method='post'>
+      <button class="danger needsConfirm">Reset WiFi Settings</button>
     </form>
     <form id='unpair_form' action='/_unpair' method='post'>
       <button class="danger needsConfirm">Reset HomeKit Pairing</button>

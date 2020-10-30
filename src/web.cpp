@@ -13,6 +13,7 @@
 #include "env_sensor.h"
 #include "heatpump_client.h"
 #include "mqtt.h"
+#include "wifi_manager.h"
 
 // CLI update:
 // curl -F "firmware=@<FILENAME>.bin" <ADDRESS>/_update
@@ -179,11 +180,19 @@ static void web_post_reboot() {
     ESP.restart();
 }
 
+static void web_post_reset_wifi() {
+    MIE_LOG("Reset WiFi settings");
+    httpServer.send(200, mimeTable[html].mimeType, "Reset WiFi settings. Rebooting...");
+    delay(1000);
+    wifiManager.resetSettings();
+    ESP.restart();
+}
+
 static void web_post_unpair() {
     MIE_LOG("Reset HomeKit pairing");
     httpServer.send(200, mimeTable[html].mimeType, "Reset HomeKit pairing. Rebooting...");
-    homekit_storage_reset();
     delay(1000);
+    homekit_storage_reset();
     ESP.restart();
 }
 
@@ -201,6 +210,7 @@ void web_init(const char* hostname) {
     httpServer.on("/_settings", HTTP_POST, web_post_settings);
     httpServer.on("/_status", HTTP_GET, web_get_status);
     httpServer.on("/_reboot", HTTP_POST, web_post_reboot);
+    httpServer.on("/_reset_wifi", HTTP_POST, web_post_reset_wifi);
     httpServer.on("/_unpair", HTTP_POST, web_post_unpair);
 
     MDNS.begin(hostname);
