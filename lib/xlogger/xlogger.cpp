@@ -127,49 +127,6 @@ bool xLogger::ExecCommand(const String &cmd) {
     return true;
   }
 
-  if (cmd == "serial enable") {
-    serialEnabled = true;
-    return true;
-  }
-  if (cmd == "serial disable") {
-    serialEnabled = false;
-    return true;
-  }
-  if (cmd == "serial ?") {
-    println(SF("Serial: ") + (serialEnabled ? SF("enable") : SF("disable")));
-    return true;
-  }
-
-  if (cmd == "showdebuglvl enable") {
-    showDebugLevel = true;
-    return true;
-  }
-  if (cmd == "showdebuglvl disable") {
-    showDebugLevel = false;
-    return true;
-  }
-  if (cmd == "showdebuglvl ?") {
-    println(SF("Show debug level: ") + (showDebugLevel ? SF("enable") : SF("disable")));
-    return true;
-  }
-
-  if (cmd == "loglvl info") {
-    filterLogLevel = llInfo;
-    return true;
-  }
-  if (cmd == "loglvl warning") {
-    filterLogLevel = llWarning;
-    return true;
-  }
-  if (cmd == "loglvl error") {
-    filterLogLevel = llError;
-    return true;
-  }
-  if (cmd == "loglvl ?") {
-    println(filterLogLevel, "Log level: " + String(strLogLevel[filterLogLevel]));
-    return true;
-  }
-
   if (cmd == "time none") {
     logTimeFormat = ltNone;
     return true;
@@ -280,16 +237,9 @@ void xLogger::showInitMessage() {
   msg += SF("\r\nUptime: ") + str;
 
   msg += SF("\r\n\r\nCommands:\r\n");
-  msg += SF("serial [enable|disable] write log to serial debug port. [");
-  msg += (serialEnabled ? SF("enabled]\r\n") : SF("disabled]\r\n"));
-  msg += SF("showdebuglvl [enable|disable] shows debug level in log lines. [");
-  msg += (showDebugLevel ? SF("enabled]\r\n") : SF("disabled]\r\n"));
-  msg += SF("loglvl [info|warning|error] filters messages by log level. [");
-  msg += String(strLogLevel[filterLogLevel]) + SF("]\r\n");
-  msg += SF("time [none|str|ms|btw|utc] shows time in log lines. [");
+  msg += SF("time [none|str|ms|btw|utc]: shows time in log lines. [");
   msg += String(strLogTimeFormat[logTimeFormat]) + SF("]\r\n");
-  msg += SF("mem print free heap.\r\n");
-  msg += SF("uptime print module uptime.\r\n");
+  msg += SF("mem: print free heap.\r\n");
   if (commandDescription && _cmdCallback)
     msg += String(commandDescription) + STR_RN;
   msg += STR_RN;
