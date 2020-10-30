@@ -3,7 +3,6 @@
 char pf_buffer[PRINTF_BUFFER_LENGTH];
 char lineBuffer[LINE_BUFFER_LENGTH] = {0};
 int lineBufferLen = 0;
-time_t lastBootTime;
 
 const char *strLogLevel[llLast] = {
   "n/a",
@@ -20,12 +19,20 @@ const char *strLogTimeFormat[ltLast] = {
   "utc"
 };
 
+// seconds
+time_t bootTime() {
+  if (timeStatus() != timeNotSet) {
+    return now() - millis() / 1000;
+  } else {
+    return 0;
+  }
+}
+
 xLogger::xLogger() {
   
 }
 
 void xLogger::begin(const char _hostName[], Stream *_serial, bool _serialEnabled, const char _passwd[]) {
-  lastBootTime = now();
   hostName = String(_hostName);
   telnetServer.begin();
   telnetServer.setNoDelay(true);
@@ -263,10 +270,12 @@ void xLogger::showInitMessage() {
   msg += SF("\r\n") + heap;
 
   char str[20];
-  utcTimeToStr(str, 20, lastBootTime);
-  msg += SF("\r\nBoot  : ") + str;
-  utcTimeToStr(str, 20, now());
-  msg += SF("\r\nTime  : ") + str;
+  if (timeStatus() != timeNotSet) {
+    utcTimeToStr(str, 20, bootTime());
+    msg += SF("\r\nBoot  : ") + str;
+    utcTimeToStr(str, 20, now());
+    msg += SF("\r\nTime  : ") + str;
+  }
   uptimeString(str, 20, millis() / 1000);
   msg += SF("\r\nUptime: ") + str;
 
@@ -416,14 +425,10 @@ void xLogger::formatLogMessage(String &str, const char *buffer, size_t size, Log
         oldMillis = header->logTime;
         break;
       case ltUTCTime:
-        if (timeStatus() != timeNotSet) {
-          char time[20];
-          utcTimeToStr(time, 20, lastBootTime + header->logTime / 1000);
-          str = String(time);
-          str += SF(" ");
-        } else {
-          str = "[NTP sync error] ";
-        }
+        char time[20];
+        utcTimeToStr(time, 20, bootTime() + header->logTime / 1000);
+        str = String(time);
+        str += SF(" ");
         break;
       case ltNone:
       case ltLast:

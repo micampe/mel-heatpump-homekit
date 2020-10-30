@@ -5,6 +5,7 @@
 #include <Ticker.h>
 #include <arduino_homekit_server.h>
 
+#include "debug.h"
 #include "led_status_patterns.h"
 
 WiFiManager wifiManager;
@@ -28,11 +29,17 @@ void wifi_init(const char* ssid) {
     if (drd.detect()) {
         led_status_signal(&status_led_double_reset);
         while (!wifiManager.startConfigPortal(ssid)) {
-            Serial.println("WiFi config portail failed to connect, trying again");
+            MIE_LOG("WiFi config portail timed out, restarting");
+            delay(1000);
+            ESP.restart();
         }
     } else {
         while (!wifiManager.autoConnect(ssid)) {
-            Serial.println("WiFi connection failed, trying again");
+            MIE_LOG("WiFi connection failed, trying again");
         }
     }
+
+    WiFi.mode(WIFI_STA);
+    MIE_LOG("WiFi Connection successful");
+    MIE_LOG("IP: %s", WiFi.localIP().toString().c_str());
 }

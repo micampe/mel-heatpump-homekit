@@ -4,6 +4,7 @@
 #include <coredecls.h>
 
 #include "ntp_clock.h"
+#include "debug.h"
 
 
 static bool timeWasSet = false;
@@ -13,19 +14,17 @@ void ntp_clock_init() {
 
     settimeofday_cb([] {
         timeWasSet = true;
+        setTime(time(nullptr));
     });
 
-    Serial.print("Syncing NTP time...");
+    MIE_LOG("Syncing NTP time");
     int timeout = 4;
     int tick = 0;
     while (!timeWasSet && tick++ < timeout) {
         delay(500);
-        Serial.print('.');
     }
     if (!timeWasSet) {
-        Serial.println(" timed out");
-    } else {
-        Serial.println();
+        MIE_LOG("NTP timed out");
     }
 
     setSyncProvider([] { return time(nullptr); });

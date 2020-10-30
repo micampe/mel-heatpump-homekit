@@ -27,9 +27,9 @@ void setup() {
     sprintf(name, NAME_PREFIX "%06x", ESP.getChipId());
     sprintf(hostname, HOSTNAME_PREFIX "%06x", ESP.getChipId());
 
+    debug_init(name);
     wifi_init(name);
     ntp_clock_init();
-    debug_init(name);
     web_init(hostname);
     mqtt_init(name);
     env_sensor_init();
