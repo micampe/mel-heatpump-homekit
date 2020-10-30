@@ -3,7 +3,6 @@
 #include <TZ.h>
 #include <coredecls.h>
 
-#include "debug.h"
 #include "ntp_clock.h"
 
 
@@ -16,13 +15,18 @@ void ntp_clock_init() {
         timeWasSet = true;
     });
 
-    MIE_LOG("Syncing NTP time...");
     Serial.print("Syncing NTP time...");
-    while (!timeWasSet) {
+    int timeout = 4;
+    int tick = 0;
+    while (!timeWasSet && tick++ < timeout) {
         delay(500);
-        Serial.print(".");
+        Serial.print('.');
     }
-    Serial.println();
+    if (!timeWasSet) {
+        Serial.println(" timed out");
+    } else {
+        Serial.println();
+    }
 
     setSyncProvider([] { return time(nullptr); });
 }

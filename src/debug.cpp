@@ -26,7 +26,7 @@ void debug_init(const char ssid[]) {
     Debug.setTimeFormat(ltUTCTime);
     Debug.setSerial(&Serial);
     Debug.enableSerial(true);
-    MIE_LOG("%s connected", ssid);
+    MIE_LOG("%s remoted log connected", ssid);
 #endif
 
     asprintf(&heapFreeTopic, "debug/%s/heap_free", ssid);
