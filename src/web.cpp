@@ -13,14 +13,12 @@
 #include "env_sensor.h"
 #include "heatpump_client.h"
 #include "mqtt.h"
+#include "settings.h"
 #include "wifi_manager.h"
 
 // CLI update:
 // curl -F "firmware=@<FILENAME>.bin" <ADDRESS>/_update
 
-#define CONFIG_FILE "/config.json"
-
-Settings settings;
 #define JSON_CAPACITY 512
 
 ESP8266WebServer httpServer(80);
@@ -81,33 +79,6 @@ static void status_homekit(char (&str)[20]) {
     }
 }
 
-void settings_init() {
-    LittleFS.begin();
-    File f = LittleFS.open(CONFIG_FILE, "r");
-    if (!f) {
-        MIE_LOG("Creating empty config file");
-        f = LittleFS.open(CONFIG_FILE, "w");
-        f.write("{}");
-        f.close();
-        f = LittleFS.open(CONFIG_FILE, "r");
-    }
-
-    StaticJsonDocument<JSON_CAPACITY> doc;
-    DeserializationError error = deserializeJson(doc, f);
-    if (error) {
-        MIE_LOG("Error loading configuration file");
-        LittleFS.remove(CONFIG_FILE);
-    }
-
-    uint16_t port = strtol(doc["mqtt_port"] | "", nullptr, 10);
-    settings.mqtt_port = port > 0 ? port : 1883;
-    strlcpy(settings.mqtt_server, doc["mqtt_server"] | "", sizeof(settings.mqtt_server));
-    strlcpy(settings.mqtt_temp, doc["mqtt_temp"] | "", sizeof(settings.mqtt_temp));
-    strlcpy(settings.mqtt_humidity, doc["mqtt_hum"] | "", sizeof(settings.mqtt_humidity));
-    strlcpy(settings.mqtt_dew_point, doc["mqtt_dew_point"] | "", sizeof(settings.mqtt_dew_point));
-
-    f.close();
-}
 
 static void web_get_settings() {
     File config = LittleFS.open(CONFIG_FILE, "r");
@@ -201,7 +172,6 @@ static void web_post_unpair() {
 }
 
 void web_init(const char* hostname) {
-    settings_init();
     updateServer.setup(&httpServer, "/_update");
 
     httpServer.on("/", HTTP_GET, []() {

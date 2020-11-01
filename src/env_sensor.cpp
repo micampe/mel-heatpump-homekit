@@ -10,7 +10,7 @@
 #include "env_sensor.h"
 #include "heatpump_client.h"
 #include "mqtt.h"
-#include "web.h"
+#include "settings.h"
 
 #define SAMPLE_INTERVAL 10
 

@@ -9,6 +9,7 @@
 #include "led_status_patterns.h"
 #include "mqtt.h"
 #include "ntp_clock.h"
+#include "settings.h"
 #include "web.h"
 #include "wifi_manager.h"
 
@@ -27,6 +28,7 @@ void setup() {
     sprintf(name, NAME_PREFIX "%06x", ESP.getChipId());
     sprintf(hostname, HOSTNAME_PREFIX "%06x", ESP.getChipId());
 
+    settings_init();
     debug_init(name);
     wifi_init(name);
     ntp_clock_init();

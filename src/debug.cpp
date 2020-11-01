@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 #include "mqtt.h"
+#include "settings.h"
 
 xLogger Debug;
 
@@ -26,24 +27,27 @@ void debug_init(const char ssid[]) {
     Debug.setTimeFormat(ltUTCTime);
     Debug.setSerial(&Serial);
     Debug.enableSerial(true);
-    MIE_LOG("%s remoted log connected", ssid);
+    MIE_LOG("%s remote log connected", ssid);
 #endif
 
-    asprintf(&heapFreeTopic, "debug/%s/heap_free", ssid);
-    asprintf(&heapMaxTopic, "debug/%s/heap_max", ssid);
-    asprintf(&stackFreeTopic, "debug/%s/stack_free", ssid);
-    asprintf(&homeKitClients, "debug/%s/homekit_clients", ssid);
+    if (settings.debug) {
+        MIE_LOG("Memory stats reporting enabled");
+        asprintf(&heapFreeTopic, "debug/%s/heap_free", ssid);
+        asprintf(&heapMaxTopic, "debug/%s/heap_max", ssid);
+        asprintf(&stackFreeTopic, "debug/%s/stack_free", ssid);
+        asprintf(&homeKitClients, "debug/%s/homekit_clients", ssid);
 
-    statsTicker.attach_scheduled(STATS_INTERVAL, [] {
-        char str[6];
-        snprintf(str, sizeof(str), "%u", ESP.getFreeHeap());
-        mqtt.publish(heapFreeTopic, str);
-        snprintf(str, sizeof(str), "%u", ESP.getMaxFreeBlockSize());
-        mqtt.publish(heapMaxTopic, str);
-        snprintf(str, sizeof(str), "%u", ESP.getFreeContStack());
-        mqtt.publish(stackFreeTopic, str);
-        // N * 1000 to scale it similar to memory values
-        snprintf(str, sizeof(str), "%d", arduino_homekit_connected_clients_count() * 1000);
-        mqtt.publish(homeKitClients, str);
-    });
+        statsTicker.attach_scheduled(STATS_INTERVAL, [] {
+            char str[6];
+            snprintf(str, sizeof(str), "%u", ESP.getFreeHeap());
+            mqtt.publish(heapFreeTopic, str);
+            snprintf(str, sizeof(str), "%u", ESP.getMaxFreeBlockSize());
+            mqtt.publish(heapMaxTopic, str);
+            snprintf(str, sizeof(str), "%u", ESP.getFreeContStack());
+            mqtt.publish(stackFreeTopic, str);
+            // N * 1000 to scale it similar to memory values
+            snprintf(str, sizeof(str), "%d", arduino_homekit_connected_clients_count() * 1000);
+            mqtt.publish(homeKitClients, str);
+        });
+    }
 }
