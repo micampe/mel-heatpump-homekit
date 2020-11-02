@@ -1,6 +1,5 @@
 #include <Arduino.h>
 #include <Ticker.h>
-#include <arduino_homekit_server.h>
 
 #include "debug.h"
 #include "env_sensor.h"
@@ -46,8 +45,8 @@ void setup() {
 }
 
 void loop() {
-    httpServer.handleClient();
-    arduino_homekit_loop();
-    mqtt.loop();
-    Debug.handle();
+    web_loop();
+    homekit_loop();
+    mqtt_loop();
+    debug_loop();
 }

@@ -1,11 +1,10 @@
 #include "wifi_manager.h"
 
 #include <DoubleResetDetect.h>
-#include <WiFiManager.h>
 #include <Ticker.h>
-#include <arduino_homekit_server.h>
 
 #include "debug.h"
+#include "homekit.h"
 #include "led_status_patterns.h"
 
 WiFiManager wifiManager;

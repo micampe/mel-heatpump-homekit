@@ -10,6 +10,7 @@
 #include "accessory.h"
 #include "debug.h"
 #include "heatpump_client.h"
+#include "homekit.h"
 #include "led_status_patterns.h"
 
 static char serial[7];
@@ -249,4 +250,12 @@ void homekit_init(const char *ssid, std::function<void()> loop) {
     keepAliveTicker.attach_scheduled(ANNOUNCE_INTERVAL, []() {
         MDNS.announce();
     });
+}
+
+void homekit_loop() {
+    arduino_homekit_loop();
+}
+
+int homekit_clients_count() {
+    return arduino_homekit_connected_clients_count();
 }

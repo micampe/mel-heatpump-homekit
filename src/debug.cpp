@@ -1,16 +1,17 @@
 #include "debug.h"
 
 #include <Ticker.h>
-#include <arduino_homekit_server.h>
 #include <stdio.h>
+#include <xlogger.h>
 
+#include "homekit.h"
 #include "mqtt.h"
 #include "settings.h"
 
 xLogger Debug;
 
 #define STATS_INTERVAL 11
-Ticker statsTicker;
+static Ticker statsTicker;
 
 static char *heapFreeTopic;
 static char *heapMaxTopic;
@@ -46,8 +47,16 @@ void debug_init(const char ssid[]) {
             snprintf(str, sizeof(str), "%u", ESP.getFreeContStack());
             mqtt.publish(stackFreeTopic, str);
             // N * 1000 to scale it similar to memory values
-            snprintf(str, sizeof(str), "%d", arduino_homekit_connected_clients_count() * 1000);
+            snprintf(str, sizeof(str), "%d", homekit_clients_count() * 1000);
             mqtt.publish(homeKitClients, str);
         });
     }
+}
+
+void logger_set_serial_enabled(bool enabled) {
+    Debug.enableSerial(enabled);
+}
+
+void debug_loop() {
+    Debug.handle();
 }

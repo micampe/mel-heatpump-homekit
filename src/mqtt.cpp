@@ -1,5 +1,7 @@
 #include "mqtt.h"
 
+#include <ESP8266WiFi.h>
+#include <PubSubClient.h>
 #include <Ticker.h>
 
 #include "debug.h"
@@ -47,4 +49,8 @@ bool mqtt_connect() {
         MIE_LOG("MQTT connection failed");
         return false;
     }
+}
+
+void mqtt_loop() {
+    mqtt.loop();
 }

@@ -1,7 +1,4 @@
 #include <Arduino.h>
-#include <homekit/characteristics.h>
-#include <homekit/homekit.h>
-#include <homekit/types.h>
 
 #include "accessory.h"
 #include "custom_characteristics.h"

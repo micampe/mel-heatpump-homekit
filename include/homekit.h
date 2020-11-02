@@ -10,3 +10,9 @@
 #define HP_SPEED(s) (s <= 20 ? "QUIET" : s <= 40 ? "1" : s <= 60 ? "2" : s <= 80 ? "3" : "4")
 
 void homekit_init(const char *ssid, std::function<void()> loop);
+void homekit_loop();
+int homekit_clients_count();
+
+// functions from the HomeKit library
+extern "C" bool homekit_is_paired();
+extern "C" int homekit_storage_reset();

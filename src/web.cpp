@@ -1,17 +1,16 @@
 #include "web.h"
 
+#include <ArduinoJson.h>
 #include <ESP8266HTTPUpdateServer.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
 #include <LittleFS.h>
 #include <Time.h>
-#include <arduino_homekit_server.h>
-// this needs to be after the homekit header
-#include <ArduinoJson.h>
 
 #include "debug.h"
 #include "env_sensor.h"
 #include "heatpump_client.h"
+#include "homekit.h"
 #include "mqtt.h"
 #include "settings.h"
 #include "wifi_manager.h"
@@ -21,8 +20,8 @@
 
 #define JSON_CAPACITY 512
 
-ESP8266WebServer httpServer(80);
-ESP8266HTTPUpdateServer updateServer;
+static ESP8266WebServer httpServer(80);
+static ESP8266HTTPUpdateServer updateServer;
 
 using namespace mime;
 
@@ -70,9 +69,8 @@ static void status_mqtt(char (&str)[22]) {
 
 static void status_homekit(char (&str)[20]) {
     size_t size = sizeof(str);
-    homekit_server_t *homekit = arduino_homekit_get_running_server();
-    if (homekit->paired) {
-        int clients = arduino_homekit_connected_clients_count();
+    if (homekit_is_paired()) {
+        int clients = homekit_clients_count();
         snprintf(str, size, "paired, %d client%s", clients, clients == 1 ? "" : "s");
     } else {
         snprintf(str, size, "waiting for pairing");
@@ -188,4 +186,8 @@ void web_init(const char* hostname) {
     MDNS.begin(hostname);
     MDNS.addService("http", "tcp", 80);
     httpServer.begin();
+}
+
+void web_loop() {
+    httpServer.handleClient();
 }
