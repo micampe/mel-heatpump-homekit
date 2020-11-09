@@ -17,7 +17,7 @@ static char serial[7];
 static Ticker updateTicker;
 static Ticker keepAliveTicker;
 
-#define ANNOUNCE_INTERVAL 2
+#define ANNOUNCE_INTERVAL 1000
 
 // throttle updates to the heat pump to try to send more settings at once and
 // avoid conflicts when changing multiple settings from HomeKit
@@ -247,7 +247,7 @@ void homekit_init(const char *ssid, std::function<void()> loop) {
 
     // Keep HomeKit connection alive
     // https://github.com/Mixiaoxiao/Arduino-HomeKit-ESP8266/issues/9
-    keepAliveTicker.attach_scheduled(ANNOUNCE_INTERVAL, []() {
+    keepAliveTicker.attach_ms_scheduled(ANNOUNCE_INTERVAL, []() {
         MDNS.announce();
     });
 }
