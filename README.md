@@ -104,9 +104,3 @@ The web interface shows the current state of the device and allows firmware
 upgrades and changing settings. Settings are only interesting if an external
 temperature and humidity sensor is connected and allow publishing the sensor
 readings over mqtt.
-
-### Logging
-
-To access operating logs connect to the ESP using telnet. The device maintains
-a buffer of recent operations, so you can connect and see what it did even
-after the fact.
