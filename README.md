@@ -21,7 +21,21 @@ A cable with the correct connector is available for purchase
 [here](http://www.usastore.revolectrix.com/Products_2/Cellpro-4s-Charge-Adapters_2/Cellpro-JST-PA-Battery-Pigtail-10-5-Position).
 Ignore the colors of the wires, black will stay not connected.
 
-## Setup
+## Software
+
+Download the most recent [binary
+image](https://github.com/micampe/mel-heatpump-homekit/releases) and flash it
+to the ESP8266 using [esptool](https://github.com/espressif/esptool/):
+
+```bash
+esptool.py --port SERIAL_PORT write_flash --erase-all 0x0 mel_heatpump_vX.X.X.bin
+```
+
+or one of the third party options, for example [NodeMCU
+Flasher](https://github.com/nodemcu/nodemcu-flasher).
+
+You only need to do this step the first time, subsequent updates can be done
+using the web interface.
 
 After flashing the firmware the ESP8266 will create a WiFi network named `Heat
 Pump XXXXXX`. Connect to it and set up your WiFi name and password. The device
