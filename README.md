@@ -2,6 +2,8 @@
 
 ESP8266 HomeKit accessory firmware for Mitsubishi heat pumps.
 
+🚨🚨🚨 **Archived** I am not using this AC unit anymore so I am unable to maintain this project further.
+
 ## Hardware
 
 Most ESP8266 boards should work, but I only tested this with a D1 mini clone.
